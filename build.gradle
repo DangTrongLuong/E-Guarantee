@@ -40,7 +40,7 @@ dependencies {
 	// ---- Database driver ----
 	// Add your chosen driver here (left out on purpose — add it yourself), e.g.:
 	// runtimeOnly 'org.postgresql:postgresql'
-	// runtimeOnly 'com.mysql:mysql-connector-j'
+	 runtimeOnly 'com.mysql:mysql-connector-j'
 	// runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
 
 	// ---- Testing ----
@@ -57,14 +57,14 @@ dependencies {
 	// implementation 'org.mapstruct:mapstruct:1.6.3'
 	// annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
 	// If combining MapStruct with Lombok, also add (order matters, keep this last):
-	// annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
+	 annotationProcessor 'org.projectlombok:lombok-mapstruct-binding:0.2.0'
 
 	// --- #15 Spring Security + JWT ---
-	// implementation 'org.springframework.boot:spring-boot-starter-security'
-	// implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
-	// runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
-	// runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
-	// testImplementation 'org.springframework.security:spring-security-test'
+	 implementation 'org.springframework.boot:spring-boot-starter-security'
+	 implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	 runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	 runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+	 testImplementation 'org.springframework.security:spring-security-test'
 
 	// --- #16 Scheduled Job ---
 	// No extra dependency needed — just add @EnableScheduling + @Scheduled.
@@ -83,7 +83,7 @@ dependencies {
 	// testImplementation 'org.testcontainers:postgresql' // or 'mysql', matching your DB
 
 	// --- #20 Swagger / OpenAPI ---
-	// implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
+	 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
 }
 
 tasks.named('test') {
