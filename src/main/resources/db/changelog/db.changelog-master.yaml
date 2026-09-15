@@ -1,10 +1,5 @@
 databaseChangeLog:
-  # Add one includeAll (or one include per file) per new changeset file.
-  # Never edit a changeset that has already run against a shared database —
-  # add a new file/changeset instead.
-  # Example:
-  # - include:
-  #     file: db/changelog/changes/001-create-customer-table.yaml
-  - includeAll:
-      path: db/changelog/changes
-      errorIfMissingOrEmpty: false
+  - include:
+      file: changes/002-create-customer-table.yaml
+      relativeToChangelogFile: true
+

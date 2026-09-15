@@ -1,0 +1,52 @@
+databaseChangeLog:
+  - changeSet:
+      id: 02-create-table-customers
+      author: system
+      comment: Tạo bảng customers tương ứng entity Customer
+      changes:
+        - createTable:
+            tableName: customers
+            columns:
+              - column:
+                  name: cif
+                  type: VARCHAR(12)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_customers
+                    nullable: false
+              - column:
+                  name: customer_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tax_code
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: address
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+      rollback:
+        - dropTable:
+            tableName: customers
+
+  - changeSet:
+      id: 02-1-check-customers-cif-format
+      author: system
+      comment: Ràng buộc CHECK - cif phải là chuỗi số từ 6 đến 12 chữ số
+      preConditions:
+        - onFail: MARK_RAN
+        - dbms:
+            type: mysql,mariadb
+      changes:
+        - sql:
+            sql: >
+              ALTER TABLE customers
+              ADD CONSTRAINT chk_customers_cif_format
+              CHECK (cif REGEXP '^[0-9]{6,12}$');
+      rollback:
+        - sql:
+            sql: ALTER TABLE customers DROP CHECK chk_customers_cif_format;
