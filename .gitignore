@@ -31,3 +31,6 @@ bin/
 
 ### macOS ###
 .DS_Store
+
+### Local env ###
+.env

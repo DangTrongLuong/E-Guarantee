@@ -1,6 +1,36 @@
 # BE
 
+Spring Boot backend with MySQL and Docker.
 
+1. Copy `.env.example` to `.env`
+2. Fill in your local values
+
+## Run local
+
+```bash
+./gradlew bootRun
+```
+
+## Run Docker
+
+```bash
+docker compose up --build
+```
+
+This starts both the MySQL database and the backend in one command.
+
+## Local defaults
+
+- `MYSQL_HOST=localhost`
+- `MYSQL_PORT=3306`
+- `MYSQL_DATABASE=ecommerce`
+- `MYSQL_USER=ecommerce`
+- `MYSQL_PASSWORD=ecommerce`
+
+## Liquibase
+
+Liquibase is wired in, but the changelog set is intentionally empty for now.
+Add new files under `src/main/resources/db/changelog/changes/` later.
 
 ## Getting started
 
