@@ -14,6 +14,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.example.ecommerce.dto.request.RejectGuaranteeRequest;
+import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/guarantees")
@@ -54,5 +58,81 @@ public class GuaranteeController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Cập nhật yêu cầu bảo lãnh thành công", response));
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+            summary = "Lấy chi tiết yêu cầu bảo lãnh",
+            description = "Lấy thông tin chi tiết của một yêu cầu bảo lãnh theo mã"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> getDetail(
+            @PathVariable String id
+    ) {
+        GuaranteeResponse response = guaranteeService.getDetail(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Lấy chi tiết yêu cầu bảo lãnh thành công", response));
+    }
+
+    @GetMapping("/{id}/histories")
+    @Operation(
+            summary = "Lấy lịch sử xử lý yêu cầu bảo lãnh",
+            description = "Lấy danh sách lịch sử xử lý theo thứ tự thời gian"
+    )
+    public ResponseEntity<ApiResponse<List<ProcessingHistoryResponse>>> getHistories(
+            @PathVariable String id
+    ) {
+        List<ProcessingHistoryResponse> response =
+                guaranteeService.getHistories(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Lấy lịch sử xử lý thành công", response));
+    }
+
+    @PostMapping("/{id}/submit")
+    @Operation(
+            summary = "Gửi yêu cầu bảo lãnh phê duyệt",
+            description = "MARKER gửi hồ sơ ở trạng thái DRAFT sang PENDING_APPROVAL"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> submit(
+            @PathVariable String id
+    ) {
+        GuaranteeResponse response = guaranteeService.submit(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Gửi yêu cầu bảo lãnh phê duyệt thành công", response));
+    }
+
+    @PostMapping("/{id}/approve")
+    @Operation(
+            summary = "Phê duyệt yêu cầu bảo lãnh",
+            description = "CHECKER phê duyệt hồ sơ ở trạng thái PENDING_APPROVAL"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> approve(
+            @PathVariable String id
+    ) {
+        GuaranteeResponse response = guaranteeService.approve(id);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Phê duyệt yêu cầu bảo lãnh thành công", response));
+    }
+
+    @PostMapping("/{id}/reject")
+    @Operation(
+            summary = "Từ chối yêu cầu bảo lãnh",
+            description = "CHECKER từ chối hồ sơ ở trạng thái PENDING_APPROVAL, lý do từ 10 đến 500 ký tự"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> reject(
+            @PathVariable String id,
+            @Valid @RequestBody RejectGuaranteeRequest request
+    ) {
+        GuaranteeResponse response = guaranteeService.reject(id, request);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Từ chối yêu cầu bảo lãnh thành công", response));
     }
 }
