@@ -1,5 +1,8 @@
 databaseChangeLog:
   - include:
+      file: changes/001-create-users.yaml
+      relativeToChangelogFile: true
+  - include:
       file: changes/002-create-customer-table.yaml
       relativeToChangelogFile: true
 

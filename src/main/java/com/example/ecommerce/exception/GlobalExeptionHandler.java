@@ -41,6 +41,12 @@ public class GlobalExeptionHandler {
         return build(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage());
     }
 
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDuplicateResource(DuplicateResourceException ex) {
+        log.warn("Tài nguyên bị trùng lặp: {}", ex.getMessage());
+        return build(HttpStatus.CONFLICT, "DUPLICATE_RESOURCE", ex.getMessage());
+    }
+
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
         log.error("Vi phạm tính toàn vẹn dữ liệu", ex);
