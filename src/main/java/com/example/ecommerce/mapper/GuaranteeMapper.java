@@ -23,10 +23,10 @@ public interface GuaranteeMapper {
     @Mapping(target = "customerName", source = "customer.customerName")
     @Mapping(target = "taxCode", source = "customer.taxCode")
     @Mapping(target = "customerAddress", source = "customer.address")
-    @Mapping(target = "createdBy", ignore = true)
-    @Mapping(target = "createdByFullName", ignore = true)
-    @Mapping(target = "updatedBy", ignore = true)
-    @Mapping(target = "updatedByFullName", ignore = true)
+    @Mapping(target = "createdBy", source = "createdBy.username")
+    @Mapping(target = "createdByFullName", source = "createdBy.fullName")
+    @Mapping(target = "updatedBy", source = "updatedBy.username")
+    @Mapping(target = "updatedByFullName", source = "updatedBy.fullName")
     @Mapping(target = "guaranteeDays", ignore = true)
     GuaranteeResponse toResponse(GuaranteeRequest entity);
 
@@ -39,3 +39,4 @@ public interface GuaranteeMapper {
     @Mapping(target = "updatedDate", ignore = true)
     void updateEntityFromRequest(GuaranteeCreationRequest request, @MappingTarget GuaranteeRequest entity);
 }
+

@@ -134,41 +134,41 @@ databaseChangeLog:
             baseTableName: guarantee_requests
             constraintName: fk_gr_customer_cif
 
-#  - changeSet:
-#      id: 03-2-fk-guarantee-requests-created-by
-#      author: system
-#      comment: FK guarantee_requests.created_by -> users.username
-#      changes:
-#        - addForeignKeyConstraint:
-#            baseTableName: guarantee_requests
-#            baseColumnNames: created_by
-#            constraintName: fk_gr_created_by
-#            referencedTableName: users
-#            referencedColumnNames: username
-#            onDelete: RESTRICT
-#            onUpdate: RESTRICT
-#      rollback:
-#        - dropForeignKeyConstraint:
-#            baseTableName: guarantee_requests
-#            constraintName: fk_gr_created_by
-#
-#  - changeSet:
-#      id: 03-3-fk-guarantee-requests-updated-by
-#      author: system
-#      comment: FK guarantee_requests.updated_by -> users.username
-#      changes:
-#        - addForeignKeyConstraint:
-#            baseTableName: guarantee_requests
-#            baseColumnNames: updated_by
-#            constraintName: fk_gr_updated_by
-#            referencedTableName: users
-#            referencedColumnNames: username
-#            onDelete: SET NULL
-#            onUpdate: RESTRICT
-#      rollback:
-#        - dropForeignKeyConstraint:
-#            baseTableName: guarantee_requests
-#            constraintName: fk_gr_updated_by
+  - changeSet:
+      id: 03-2-fk-guarantee-requests-created-by
+      author: system
+      comment: FK guarantee_requests.created_by -> users.username
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            baseColumnNames: created_by
+            constraintName: fk_gr_created_by
+            referencedTableName: users
+            referencedColumnNames: username
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            constraintName: fk_gr_created_by
+
+  - changeSet:
+      id: 03-3-fk-guarantee-requests-updated-by
+      author: system
+      comment: FK guarantee_requests.updated_by -> users.username
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            baseColumnNames: updated_by
+            constraintName: fk_gr_updated_by
+            referencedTableName: users
+            referencedColumnNames: username
+            onDelete: SET NULL
+            onUpdate: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            constraintName: fk_gr_updated_by
 
   - changeSet:
       id: 03-4-check-guarantee-requests
@@ -211,17 +211,17 @@ databaseChangeLog:
         - sql:
             sql: ALTER TABLE guarantee_requests DROP CHECK chk_gr_phone_number_format;
 
-#  - changeSet:
-#      id: 03-5-make-created-by-nullable
-#      author: system
-#      comment: Bỏ ràng buộc not null và FK cho created_by
-#      preConditions:
-#        - onFail: MARK_RAN
-#      changes:
-#        - dropForeignKeyConstraint:
-#            baseTableName: guarantee_requests
-#            constraintName: fk_gr_created_by
-#        - dropNotNullConstraint:
-#            tableName: guarantee_requests
-#            columnName: created_by
-#            columnDataType: VARCHAR(50)
+  - changeSet:
+      id: 03-5-make-created-by-nullable
+      author: system
+      comment: Bỏ ràng buộc not null và FK cho created_by
+      preConditions:
+        - onFail: MARK_RAN
+      changes:
+        - dropForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            constraintName: fk_gr_created_by
+        - dropNotNullConstraint:
+            tableName: guarantee_requests
+            columnName: created_by
+            columnDataType: VARCHAR(50)

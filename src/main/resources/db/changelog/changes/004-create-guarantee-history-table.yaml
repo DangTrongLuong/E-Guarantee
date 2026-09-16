@@ -29,7 +29,7 @@ databaseChangeLog:
                   name: performed_by
                   type: VARCHAR(50)
                   constraints:
-                    nullable: true
+                    nullable: false
               - column:
                   name: role
                   type: VARCHAR(20)
@@ -67,23 +67,23 @@ databaseChangeLog:
             baseTableName: processing_histories
             constraintName: fk_ph_guarantee_id
 
-#  - changeSet:
-#      id: 04-2-fk-processing-histories-performed-by
-#      author: system
-#      comment: FK processing_histories.performed_by -> users.username
-#      changes:
-#        - addForeignKeyConstraint:
-#            baseTableName: processing_histories
-#            baseColumnNames: performed_by
-#            constraintName: fk_ph_performed_by
-#            referencedTableName: users
-#            referencedColumnNames: username
-#            onDelete: RESTRICT
-#            onUpdate: RESTRICT
-#      rollback:
-#        - dropForeignKeyConstraint:
-#            baseTableName: processing_histories
-#            constraintName: fk_ph_performed_by
+  - changeSet:
+      id: 04-2-fk-processing-histories-performed-by
+      author: system
+      comment: FK processing_histories.performed_by -> users.username
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: processing_histories
+            baseColumnNames: performed_by
+            constraintName: fk_ph_performed_by
+            referencedTableName: users
+            referencedColumnNames: username
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: processing_histories
+            constraintName: fk_ph_performed_by
 
   - changeSet:
       id: 04-3-check-processing-histories-reject-comment
