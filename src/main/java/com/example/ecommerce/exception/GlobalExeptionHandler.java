@@ -3,7 +3,6 @@ package com.example.ecommerce.exception;
 import com.example.ecommerce.dto.response.ApiResponse;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.coyote.BadRequestException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,8 +28,8 @@ public class GlobalExeptionHandler {
         return build(HttpStatus.NOT_FOUND, "RESOURCE_NOT_FOUND", ex.getMessage());
     }
 
-    @ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<ApiResponse<Object>> handleBadRequest(BadRequestException ex) {
+    @ExceptionHandler({BadRequestException.class, IllegalArgumentException.class, IllegalStateException.class})
+    public ResponseEntity<ApiResponse<Object>> handleBadRequest(RuntimeException ex) {
         log.warn("Bad request: {}", ex.getMessage());
         return build(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.getMessage());
     }
