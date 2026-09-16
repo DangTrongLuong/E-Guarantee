@@ -49,13 +49,15 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
                         .requestMatchers("/auth/logout").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("MARKER", "CHECKER")
-                        .requestMatchers("/customers").hasAnyRole("MARKER", "CHECKER")
+                        .requestMatchers("/api/v1/customers/**").hasAnyRole("MARKER", "CHECKER")
+                        .requestMatchers("/api/v1/guarantees/**").hasAnyRole("MARKER", "CHECKER")
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer((oauth2) -> oauth2
                         .jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoderConfiguration).jwtAuthenticationConverter(jwtAuthConverter))
                 );
         return http.build();
+
     }
     @Bean
     public AuthenticationManager authenticationManager(){

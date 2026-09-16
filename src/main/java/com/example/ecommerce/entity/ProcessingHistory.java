@@ -59,13 +59,13 @@ public class ProcessingHistory implements Serializable {
     @Column(name = "action", length = 20, nullable = false, updatable = false)
     private Action action;
 
-//    @NotNull
-//    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-//    @JoinColumn(name = "performed_by", referencedColumnName = "username", nullable = false, updatable = false)
-//    private User performedBy;
-    @Size(max = 50)
-    @Column(name = "performed_by", length = 50, nullable = true, updatable = false)
-    private String performedBy;
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "performed_by", referencedColumnName = "username", nullable = false, updatable = false)
+    private User performedBy;
+//    @Size(max = 50)
+//    @Column(name = "performed_by", length = 50, nullable = true, updatable = false)
+//    private String performedBy;
 
     @NotNull
     @Enumerated(EnumType.STRING)

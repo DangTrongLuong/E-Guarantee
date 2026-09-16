@@ -7,10 +7,10 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 
-public class TenderNumberValidator implements ConstraintValidator<ValidTenderNumber, GuaranteeRequest> {
+public class TenderNumberValidator implements ConstraintValidator<ValidTenderNumber, TenderNumberAware> {
 
     @Override
-    public boolean isValid(GuaranteeRequest request, ConstraintValidatorContext context) {
+    public boolean isValid(TenderNumberAware request, ConstraintValidatorContext context) {
         if (request == null) {
             return true;
         }

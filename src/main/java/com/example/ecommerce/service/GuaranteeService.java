@@ -4,18 +4,25 @@ import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
 import com.example.ecommerce.entity.Customer;
 import com.example.ecommerce.entity.GuaranteeRequest;
+import com.example.ecommerce.entity.ProcessingHistory;
+import com.example.ecommerce.entity.User;
+import com.example.ecommerce.enums.Action;
 import com.example.ecommerce.enums.Currency;
 import com.example.ecommerce.enums.GuaranteeStatus;
-import com.example.ecommerce.enums.GuaranteeType;
 import com.example.ecommerce.exception.BadRequestException;
 import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.mapper.GuaranteeMapper;
 import com.example.ecommerce.repository.CustomerRepository;
 import com.example.ecommerce.repository.GuaranteeRequestRepository;
+import com.example.ecommerce.repository.ProcessingHistoryRepository;
+import com.example.ecommerce.repository.UserRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +37,12 @@ public class GuaranteeService {
     GuaranteeRequestRepository guaranteeRequestRepository;
     CustomerRepository customerRepository;
     GuaranteeMapper guaranteeMapper;
+    UserRepository userRepository;
+    ProcessingHistoryRepository processingHistoryRepository;
 
     @Transactional
     public GuaranteeResponse createGuarantee(GuaranteeCreationRequest request) {
-        validateGuaranteeRequest(request);
+        User currentUser = getCurrentUser();
 
         Customer customer = getAndValidateCustomer(request);
 
@@ -41,28 +50,30 @@ public class GuaranteeService {
         guaranteeRequest.setId(generateRequestId());
         guaranteeRequest.setCustomer(customer);
         guaranteeRequest.setStatus(GuaranteeStatus.DRAFT);
-        //guaranteeRequest.setCreatedBy(null);
+        guaranteeRequest.setCreatedBy(currentUser);
         guaranteeRequest.setCreatedDate(LocalDateTime.now());
         if (guaranteeRequest.getCurrency() == null) {
             guaranteeRequest.setCurrency(Currency.VND);
         }
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(guaranteeRequest);
-        log.info("Tạo thành công yêu cầu bảo lãnh ở trạng thái DRAFT: {}", saved.getId());
+        log.info("Tạo thành công yêu cầu bảo lãnh ở trạng thái DRAFT: {} bởi user: {}", saved.getId(), currentUser.getUsername());
+
+        saveHistory(saved, currentUser, Action.CREATE, null);
 
         return guaranteeMapper.toResponse(saved);
     }
 
     @Transactional
     public GuaranteeResponse updateGuarantee(String id, GuaranteeCreationRequest request) {
+        User currentUser = getCurrentUser();
+
         GuaranteeRequest existing = guaranteeRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu bảo lãnh với mã: " + id));
 
         if (existing.getStatus() != GuaranteeStatus.DRAFT && existing.getStatus() != GuaranteeStatus.REJECTED) {
             throw new BadRequestException("Chỉ được chỉnh sửa hồ sơ ở trạng thái Bản nháp (DRAFT) hoặc Bị từ chối (REJECTED)");
         }
-
-        validateGuaranteeRequest(request);
 
         Customer customer = getAndValidateCustomer(request);
 
@@ -74,29 +85,45 @@ public class GuaranteeService {
         }
 
         existing.setUpdatedDate(LocalDateTime.now());
-        //existing.setUpdatedBy(currentUsername);
-        existing.setUpdatedBy(null);
+        existing.setUpdatedBy(currentUser);
+
         GuaranteeRequest saved = guaranteeRequestRepository.save(existing);
-        log.info("Cập nhật thành công yêu cầu bảo lãnh {}: trạng thái hiện tại {}", saved.getId(), saved.getStatus());
+        log.info("Cập nhật thành công yêu cầu bảo lãnh {}: trạng thái {} bởi user: {}", saved.getId(), saved.getStatus(), currentUser.getUsername());
+
+        saveHistory(saved, currentUser, Action.UPDATE, null);
 
         return guaranteeMapper.toResponse(saved);
     }
 
-    private void validateGuaranteeRequest(GuaranteeCreationRequest request) {
-        if (request.getEffectiveDate() != null) {
-            if (request.getEffectiveDate().isBefore(java.time.LocalDate.now())) {
-                throw new BadRequestException("Ngày hiệu lực không được là ngày trong quá khứ");
-            }
-            if (request.getExpiryDate() != null && !request.getExpiryDate().isAfter(request.getEffectiveDate())) {
-                throw new BadRequestException("Ngày hết hạn phải sau ngày hiệu lực");
-            }
+    private User getCurrentUser() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new BadRequestException("Bạn chưa đăng nhập. Vui lòng đăng nhập để thực hiện thao tác này.");
         }
 
-        if (request.getGuaranteeType() == GuaranteeType.BID_BOND) {
-            if (request.getTenderNumber() == null || request.getTenderNumber().isBlank()) {
-                throw new BadRequestException("Số hiệu gói thầu là bắt buộc khi loại bảo lãnh là Bảo lãnh dự thầu (BID_BOND)");
-            }
+        String username;
+        Object principal = authentication.getPrincipal();
+        if (principal instanceof Jwt jwt) {
+            username = jwt.getSubject();
+        } else {
+            username = authentication.getName();
         }
+
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy thông tin người dùng: " + username));
+    }
+
+    private void saveHistory(GuaranteeRequest guaranteeRequest, User performedBy, Action action, String comment) {
+        ProcessingHistory history = ProcessingHistory.builder()
+                .guaranteeRequest(guaranteeRequest)
+                .performedBy(performedBy)
+                .role(performedBy.getRole())
+                .action(action)
+                .comment(comment)
+                .timestamp(LocalDateTime.now())
+                .build();
+        processingHistoryRepository.save(history);
+        log.info("Lưu lịch sử: action={}, user={}, guaranteeId={}", action, performedBy.getUsername(), guaranteeRequest.getId());
     }
 
     private Customer getAndValidateCustomer(GuaranteeCreationRequest request) {
@@ -131,3 +158,4 @@ public class GuaranteeService {
         return id;
     }
 }
+
