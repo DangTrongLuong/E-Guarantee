@@ -1,5 +1,5 @@
 package com.example.ecommerce.enums;
 
 public enum Role {
-    MAKER, CHECKER, MARKER
+    MARKER, CHECKER
 }
