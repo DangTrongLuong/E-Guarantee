@@ -1,0 +1,58 @@
+package com.example.ecommerce.controller;
+
+import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
+import com.example.ecommerce.dto.response.ApiResponse;
+import com.example.ecommerce.dto.response.GuaranteeResponse;
+import com.example.ecommerce.service.GuaranteeService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/guarantees")
+@RequiredArgsConstructor
+@FieldDefaults(makeFinal = true, level = AccessLevel.PRIVATE)
+@Slf4j
+@Tag(name = "Guarantee Request", description = "Endpoints quản lý yêu cầu bảo lãnh (Create DRAFT & Update)")
+public class GuaranteeController {
+
+    GuaranteeService guaranteeService;
+
+    @PostMapping
+    @Operation(
+            summary = "Tạo mới yêu cầu bảo lãnh (Bản nháp - DRAFT)",
+            description = "Tạo mới một hồ sơ yêu cầu bảo lãnh ở trạng thái DRAFT"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> createGuarantee(
+            @Valid @RequestBody GuaranteeCreationRequest request
+    ) {
+        log.info("Nhận yêu cầu tạo mới hồ sơ bảo lãnh");
+        GuaranteeResponse response = guaranteeService.createGuarantee(request);
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(ApiResponse.success("Tạo mới yêu cầu bảo lãnh ở trạng thái Bản nháp (DRAFT) thành công", response));
+    }
+
+    @PutMapping("/{id}")
+    @Operation(
+            summary = "Cập nhật yêu cầu bảo lãnh",
+            description = "Chỉnh sửa thông tin hồ sơ ở trạng thái DRAFT hoặc REJECTED. Hồ sơ REJECTED sau khi lưu sẽ chuyển về DRAFT"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> updateGuarantee(
+            @PathVariable String id,
+            @Valid @RequestBody GuaranteeCreationRequest request
+    ) {
+        log.info("Nhận yêu cầu cập nhật hồ sơ bảo lãnh {}", id);
+        GuaranteeResponse response = guaranteeService.updateGuarantee(id, request);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Cập nhật yêu cầu bảo lãnh thành công", response));
+    }
+}
