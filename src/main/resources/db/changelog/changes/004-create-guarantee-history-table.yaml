@@ -1,0 +1,106 @@
+databaseChangeLog:
+  - changeSet:
+      id: 04-create-table-processing-histories
+      author: system
+      comment: Tạo bảng processing_histories tương ứng entity ProcessingHistory
+      changes:
+        - createTable:
+            tableName: processing_histories
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_processing_histories
+                    nullable: false
+              - column:
+                  name: guarantee_id
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: action
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: performed_by
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: role
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: timestamp
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: comment
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+      rollback:
+        - dropTable:
+            tableName: processing_histories
+
+  - changeSet:
+      id: 04-1-fk-processing-histories-guarantee
+      author: system
+      comment: FK processing_histories.guarantee_id -> guarantee_requests.id
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: processing_histories
+            baseColumnNames: guarantee_id
+            constraintName: fk_ph_guarantee_id
+            referencedTableName: guarantee_requests
+            referencedColumnNames: id
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: processing_histories
+            constraintName: fk_ph_guarantee_id
+
+#  - changeSet:
+#      id: 04-2-fk-processing-histories-performed-by
+#      author: system
+#      comment: FK processing_histories.performed_by -> users.username
+#      changes:
+#        - addForeignKeyConstraint:
+#            baseTableName: processing_histories
+#            baseColumnNames: performed_by
+#            constraintName: fk_ph_performed_by
+#            referencedTableName: users
+#            referencedColumnNames: username
+#            onDelete: RESTRICT
+#            onUpdate: RESTRICT
+#      rollback:
+#        - dropForeignKeyConstraint:
+#            baseTableName: processing_histories
+#            constraintName: fk_ph_performed_by
+
+  - changeSet:
+      id: 04-3-check-processing-histories-reject-comment
+      author: system
+      comment: Ràng buộc CHECK - action REJECT bắt buộc có comment từ 10-500 ký tự
+      preConditions:
+        - onFail: MARK_RAN
+        - dbms:
+            type: mysql,mariadb
+      changes:
+        - sql:
+            sql: >
+              ALTER TABLE processing_histories
+              ADD CONSTRAINT chk_ph_reject_comment
+              CHECK (action <> 'REJECT'
+                     OR (comment IS NOT NULL
+                         AND CHAR_LENGTH(TRIM(comment)) BETWEEN 10 AND 500));
+      rollback:
+        - sql:
+            sql: ALTER TABLE processing_histories DROP CHECK chk_ph_reject_comment;

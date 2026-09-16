@@ -1,0 +1,227 @@
+databaseChangeLog:
+  - changeSet:
+      id: 03-create-table-guarantee-requests
+      author: system
+      validCheckSum: ANY
+      comment: Tạo bảng guarantee_requests tương ứng entity GuaranteeRequest
+      changes:
+        - createTable:
+            tableName: guarantee_requests
+            columns:
+              - column:
+                  name: id
+                  type: VARCHAR(20)
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_guarantee_requests
+                    nullable: false
+              - column:
+                  name: customer_cif
+                  type: VARCHAR(12)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: guarantee_type
+                  type: VARCHAR(30)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: guarantee_amount
+                  type: DECIMAL(15,2)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency
+                  type: VARCHAR(3)
+                  defaultValue: VND
+                  constraints:
+                    nullable: false
+              - column:
+                  name: effective_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiry_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tender_number
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: related_contract_number
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: reference_number
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: purpose
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: beneficiary_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: beneficiary_address
+                  type: VARCHAR(500)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: contact_email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: VARCHAR(15)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: status
+                  type: VARCHAR(20)
+                  defaultValue: DRAFT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_by
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: created_date
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_by
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: updated_date
+                  type: DATETIME
+                  constraints:
+                    nullable: true
+      rollback:
+        - dropTable:
+            tableName: guarantee_requests
+
+  - changeSet:
+      id: 03-1-fk-guarantee-requests-customer
+      author: system
+      comment: FK guarantee_requests.customer_cif -> customers.cif
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            baseColumnNames: customer_cif
+            constraintName: fk_gr_customer_cif
+            referencedTableName: customers
+            referencedColumnNames: cif
+            onDelete: RESTRICT
+            onUpdate: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: guarantee_requests
+            constraintName: fk_gr_customer_cif
+
+#  - changeSet:
+#      id: 03-2-fk-guarantee-requests-created-by
+#      author: system
+#      comment: FK guarantee_requests.created_by -> users.username
+#      changes:
+#        - addForeignKeyConstraint:
+#            baseTableName: guarantee_requests
+#            baseColumnNames: created_by
+#            constraintName: fk_gr_created_by
+#            referencedTableName: users
+#            referencedColumnNames: username
+#            onDelete: RESTRICT
+#            onUpdate: RESTRICT
+#      rollback:
+#        - dropForeignKeyConstraint:
+#            baseTableName: guarantee_requests
+#            constraintName: fk_gr_created_by
+#
+#  - changeSet:
+#      id: 03-3-fk-guarantee-requests-updated-by
+#      author: system
+#      comment: FK guarantee_requests.updated_by -> users.username
+#      changes:
+#        - addForeignKeyConstraint:
+#            baseTableName: guarantee_requests
+#            baseColumnNames: updated_by
+#            constraintName: fk_gr_updated_by
+#            referencedTableName: users
+#            referencedColumnNames: username
+#            onDelete: SET NULL
+#            onUpdate: RESTRICT
+#      rollback:
+#        - dropForeignKeyConstraint:
+#            baseTableName: guarantee_requests
+#            constraintName: fk_gr_updated_by
+
+  - changeSet:
+      id: 03-4-check-guarantee-requests
+      author: system
+      comment: Các ràng buộc CHECK trên guarantee_requests
+      preConditions:
+        - onFail: MARK_RAN
+        - dbms:
+            type: mysql,mariadb
+      changes:
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              ADD CONSTRAINT chk_gr_expiry_after_effective
+              CHECK (expiry_date > effective_date);
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              ADD CONSTRAINT chk_gr_tender_number_required
+              CHECK (guarantee_type <> 'BID_BOND'
+                     OR (tender_number IS NOT NULL
+                         AND CHAR_LENGTH(TRIM(tender_number)) > 0));
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              ADD CONSTRAINT chk_gr_amount_range
+              CHECK (guarantee_amount > 0 AND guarantee_amount <= 1000000000000);
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              ADD CONSTRAINT chk_gr_phone_number_format
+              CHECK (phone_number IS NULL OR phone_number REGEXP '^[0-9]{9,15}$');
+      rollback:
+        - sql:
+            sql: ALTER TABLE guarantee_requests DROP CHECK chk_gr_expiry_after_effective;
+        - sql:
+            sql: ALTER TABLE guarantee_requests DROP CHECK chk_gr_tender_number_required;
+        - sql:
+            sql: ALTER TABLE guarantee_requests DROP CHECK chk_gr_amount_range;
+        - sql:
+            sql: ALTER TABLE guarantee_requests DROP CHECK chk_gr_phone_number_format;
+
+#  - changeSet:
+#      id: 03-5-make-created-by-nullable
+#      author: system
+#      comment: Bỏ ràng buộc not null và FK cho created_by
+#      preConditions:
+#        - onFail: MARK_RAN
+#      changes:
+#        - dropForeignKeyConstraint:
+#            baseTableName: guarantee_requests
+#            constraintName: fk_gr_created_by
+#        - dropNotNullConstraint:
+#            tableName: guarantee_requests
+#            columnName: created_by
+#            columnDataType: VARCHAR(50)
