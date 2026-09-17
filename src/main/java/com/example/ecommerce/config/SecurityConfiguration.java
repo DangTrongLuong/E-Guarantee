@@ -5,7 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpRequest;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -52,8 +51,8 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers("/customers").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees").hasRole("MARKER")
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/guarantees/**").hasRole("MARKKER")
-                        .requestMatchers(HttpMethod.POST, "api/v1/guarantees/*/submit").hasRole("MARKER")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/guarantees/**").hasRole("MARKER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/submit").hasRole("MARKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/approve").hasRole("CHECKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/reject").hasRole("CHECKER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/guarantees/**").hasAnyRole("MARKER", "CHECKER")

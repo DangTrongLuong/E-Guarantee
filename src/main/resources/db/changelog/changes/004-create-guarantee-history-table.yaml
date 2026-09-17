@@ -3,6 +3,7 @@ databaseChangeLog:
       id: 04-create-table-processing-histories
       author: system
       comment: Tạo bảng processing_histories tương ứng entity ProcessingHistory
+      validCheckSum: 9:e4d508e354217493c3bd3cb52f625cc8
       changes:
         - createTable:
             tableName: processing_histories
