@@ -48,7 +48,14 @@ public class GlobalExeptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
+        String rootMsg = ex.getMostSpecificCause().getMessage();
+
         log.error("Vi phạm tính toàn vẹn dữ liệu", ex);
+
+        if (rootMsg != null && rootMsg.contains("chk_gr_phone_number_format")) {
+            return build(HttpStatus.BAD_REQUEST, "INVALID_PHONE_NUMBER",
+                    "Số điện thoại phải chứa 10 chữ số");
+        }
         return build(HttpStatus.CONFLICT, "DATA_INTEGRITY_VIOLATION",
                 "Dữ liệu vi phạm ràng buộc trong hệ thống (trùng dữ liệu hoặc liên kết không hợp lệ)");
     }

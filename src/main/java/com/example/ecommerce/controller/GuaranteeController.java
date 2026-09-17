@@ -1,6 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
+import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.response.ApiResponse;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
 import com.example.ecommerce.service.GuaranteeService;
@@ -51,7 +52,7 @@ public class GuaranteeController {
     )
     public ResponseEntity<ApiResponse<GuaranteeResponse>> updateGuarantee(
             @PathVariable String id,
-            @Valid @RequestBody GuaranteeCreationRequest request
+            @Valid @RequestBody GuaranteeUpdateRequest request
     ) {
         log.info("Nhận yêu cầu cập nhật hồ sơ bảo lãnh {}", id);
         GuaranteeResponse response = guaranteeService.updateGuarantee(id, request);

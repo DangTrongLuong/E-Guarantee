@@ -1,6 +1,7 @@
 package com.example.ecommerce.mapper;
 
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
+import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
 import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
 import com.example.ecommerce.entity.GuaranteeRequest;
@@ -40,7 +41,7 @@ public interface GuaranteeMapper {
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
     void updateEntityFromRequest(
-            GuaranteeCreationRequest request,
+            GuaranteeUpdateRequest request,
             @MappingTarget GuaranteeRequest entity
     );
 

@@ -1,6 +1,7 @@
 package com.example.ecommerce.service;
 
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
+import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.request.RejectGuaranteeRequest;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
 import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
@@ -20,6 +21,7 @@ import com.example.ecommerce.repository.CustomerRepository;
 import com.example.ecommerce.repository.GuaranteeRequestRepository;
 import com.example.ecommerce.repository.ProcessingHistoryRepository;
 import com.example.ecommerce.repository.UserRepository;
+import com.example.ecommerce.validation.CustomerInfoAware;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -72,7 +74,7 @@ public class GuaranteeService {
     }
 
     @Transactional
-    public GuaranteeResponse updateGuarantee(String id, GuaranteeCreationRequest request) {
+    public GuaranteeResponse updateGuarantee(String id, GuaranteeUpdateRequest request) {
         User currentUser = getCurrentUser();
 
         GuaranteeRequest existing = guaranteeRequestRepository.findById(id)
@@ -270,7 +272,7 @@ public class GuaranteeService {
         return response;
     }
 
-    private Customer getAndValidateCustomer(GuaranteeCreationRequest request) {
+    private Customer getAndValidateCustomer(CustomerInfoAware request) {
         Customer customer = customerRepository.findById(request.getCustomerCif())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Khách hàng với mã CIF " + request.getCustomerCif()
@@ -358,8 +360,8 @@ public class GuaranteeService {
 
         if (guaranteeRequest.getPhoneNumber() != null
                 && !guaranteeRequest.getPhoneNumber().isBlank()
-                && !guaranteeRequest.getPhoneNumber().matches("^[0-9]{9,15}$")) {
-            throw new BadRequestException("Số điện thoại phải chứa từ 9 đến 15 chữ số");
+                && !guaranteeRequest.getPhoneNumber().matches("^[0-9]{10}$")) {
+            throw new BadRequestException("Số điện thoại phải chứa 10 chữ số");
         }
     }
 }
