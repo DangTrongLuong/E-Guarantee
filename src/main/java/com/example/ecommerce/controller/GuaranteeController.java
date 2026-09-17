@@ -4,6 +4,7 @@ import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
 import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.response.ApiResponse;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
+import com.example.ecommerce.dto.response.GuaranteeSummaryResponse;
 import com.example.ecommerce.service.GuaranteeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,6 +20,10 @@ import com.example.ecommerce.dto.request.RejectGuaranteeRequest;
 import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
 
 import java.util.List;
+
+import com.example.ecommerce.dto.response.PageResponse;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/guarantees")
@@ -59,6 +64,21 @@ public class GuaranteeController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Cập nhật yêu cầu bảo lãnh thành công", response));
+    }
+
+    @GetMapping
+    @Operation(
+            summary = "Lấy danh sách yêu cầu bảo lãnh",
+            description = "Hỗ trợ lọc theo mã yêu cầu, tên khách hàng, CIF, mã số thuế, trạng thái, loại bảo lãnh, khoảng ngày tạo; hỗ trợ phân trang và sắp xếp (id, createdDate, guaranteeAmount, status, guaranteeType)"
+    )
+    public ResponseEntity<ApiResponse<PageResponse<GuaranteeSummaryResponse>>> getGuarantees(
+            @RequestParam(required = false) Map<String, Object> params
+    ) {
+        log.info("Nhận yêu cầu lấy danh sách yêu cầu bảo lãnh với params: {}", params);
+        PageResponse<GuaranteeSummaryResponse> response = guaranteeService.getGuarantees(params);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Lấy danh sách yêu cầu bảo lãnh thành công", response));
     }
 
     @GetMapping("/{id}")

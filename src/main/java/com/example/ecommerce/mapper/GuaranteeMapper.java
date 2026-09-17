@@ -3,12 +3,15 @@ package com.example.ecommerce.mapper;
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
 import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
+import com.example.ecommerce.dto.response.GuaranteeSummaryResponse;
 import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
 import com.example.ecommerce.entity.GuaranteeRequest;
 import com.example.ecommerce.entity.ProcessingHistory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface GuaranteeMapper {
@@ -44,6 +47,14 @@ public interface GuaranteeMapper {
             GuaranteeUpdateRequest request,
             @MappingTarget GuaranteeRequest entity
     );
+
+    @Mapping(target = "customerCif", source = "customer.cif")
+    @Mapping(target = "customerName", source = "customer.customerName")
+    @Mapping(target = "taxCode", source = "customer.taxCode")
+    GuaranteeSummaryResponse toSummaryResponse(GuaranteeRequest entity);
+
+    List<GuaranteeSummaryResponse> toResponseList(List<GuaranteeRequest> entities);
+
 
     @Mapping(target = "guaranteeId", ignore = true)
     @Mapping(target = "performedBy", ignore = true)

@@ -4,6 +4,7 @@ import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
 import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.request.RejectGuaranteeRequest;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
+import com.example.ecommerce.dto.response.GuaranteeSummaryResponse;
 import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
 import com.example.ecommerce.entity.Customer;
 import com.example.ecommerce.entity.GuaranteeRequest;
@@ -32,8 +33,19 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.ecommerce.dto.response.PageResponse;
+import com.example.ecommerce.specification.GuaranteeSpecification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
+
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -94,8 +106,8 @@ public class GuaranteeService {
             existing.setStatus(GuaranteeStatus.DRAFT);
         }
 
-        existing.setUpdatedBy(currentUser);
         existing.setUpdatedDate(LocalDateTime.now());
+        existing.setUpdatedBy(currentUser);
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(existing);
 
@@ -318,7 +330,6 @@ public class GuaranteeService {
                 || !guaranteeRequest.getCustomer().getCif().matches("^[0-9]{6,12}$")) {
             throw new BadRequestException("Mã CIF phải từ 6 đến 12 chữ số");
         }
-
         if (guaranteeRequest.getGuaranteeType() == null) {
             throw new BadRequestException("Loại bảo lãnh không được để trống");
         }
@@ -363,5 +374,99 @@ public class GuaranteeService {
                 && !guaranteeRequest.getPhoneNumber().matches("^[0-9]{10}$")) {
             throw new BadRequestException("Số điện thoại phải chứa 10 chữ số");
         }
+    }
+
+    public PageResponse<GuaranteeSummaryResponse> getGuarantees(Map<String, Object> params) {
+        log.info("Tìm kiếm và lọc danh sách yêu cầu bảo lãnh với params: {}", params);
+        Specification<GuaranteeRequest> spec = GuaranteeSpecification.filterByParams(params);
+        Pageable pageable = createPageable(params);
+
+        Page<GuaranteeRequest> guaranteePage = guaranteeRequestRepository.findAll(spec, pageable);
+        Page<GuaranteeSummaryResponse> summaryPage = guaranteePage.map(guaranteeMapper::toSummaryResponse);
+
+        return PageResponse.of(summaryPage);
+    }
+
+    public List<GuaranteeSummaryResponse> getGuarantees() {
+        List<GuaranteeRequest> guarantees = guaranteeRequestRepository.findAll();
+        return guaranteeMapper.toResponseList(guarantees);
+    }
+
+    private Pageable createPageable(Map<String, Object> params) {
+        int page = 0;
+        int size = 5; // Mặc định phân trang 5 bản ghi theo yêu cầu
+
+        if (params != null) {
+            if (params.containsKey("page") && params.get("page") != null) {
+                try {
+                    int p = Integer.parseInt(params.get("page").toString().trim());
+                    if (p < 0) {
+                        throw new BadRequestException("Tham số page phải lớn hơn hoặc bằng 0");
+                    }
+                    page = p;
+                } catch (NumberFormatException ex) {
+                    throw new BadRequestException("Tham số page phải là số nguyên hợp lệ");
+                }
+            }
+
+            if (params.containsKey("size") && params.get("size") != null) {
+                try {
+                    int s = Integer.parseInt(params.get("size").toString().trim());
+                    if (s <= 0) {
+                        throw new BadRequestException("Tham số size phải lớn hơn 0");
+                    }
+                    size = s;
+                } catch (NumberFormatException ex) {
+                    throw new BadRequestException("Tham số size phải là số nguyên hợp lệ");
+                }
+            }
+        }
+
+        Sort.Direction direction = Sort.Direction.DESC; // Mặc định sort DESC theo mã id (mã yêu cầu)
+        String sortBy = "id";
+
+        if (params != null) {
+            String dirStr = null;
+            if (params.containsKey("sortDirection") && params.get("sortDirection") != null) {
+                dirStr = params.get("sortDirection").toString();
+            } else if (params.containsKey("direction") && params.get("direction") != null) {
+                dirStr = params.get("direction").toString();
+            } else if (params.containsKey("sortOrder") && params.get("sortOrder") != null) {
+                dirStr = params.get("sortOrder").toString();
+            } else if (params.containsKey("sort") && params.get("sort") != null) {
+                dirStr = params.get("sort").toString();
+            }
+
+            if (dirStr != null && !dirStr.isBlank()) {
+                String normalized = dirStr.trim();
+                if ("asc".equalsIgnoreCase(normalized) || "ascending".equalsIgnoreCase(normalized)) {
+                    direction = Sort.Direction.ASC;
+                } else if ("desc".equalsIgnoreCase(normalized) || "descending".equalsIgnoreCase(normalized)) {
+                    direction = Sort.Direction.DESC;
+                } else {
+                    throw new BadRequestException("sortDirection không hợp lệ. Chỉ chấp nhận asc hoặc desc");
+                }
+            }
+
+            String sortField = null;
+            if (params.containsKey("sortBy") && params.get("sortBy") != null) {
+                sortField = params.get("sortBy").toString();
+            } else if (params.containsKey("sortField") && params.get("sortField") != null) {
+                sortField = params.get("sortField").toString();
+            } else if (params.containsKey("orderBy") && params.get("orderBy") != null) {
+                sortField = params.get("orderBy").toString();
+            }
+
+            if (sortField != null && !sortField.isBlank()) {
+                String candidate = sortField.trim();
+                Set<String> allowedSortFields = new HashSet<>(List.of("id", "createdDate", "guaranteeAmount", "status", "guaranteeType"));
+                if (!allowedSortFields.contains(candidate)) {
+                    throw new BadRequestException("sortBy không hợp lệ. Trường hợp lệ: id, createdDate, guaranteeAmount, status, guaranteeType");
+                }
+                sortBy = candidate;
+            }
+        }
+
+        return PageRequest.of(page, size, Sort.by(direction, sortBy));
     }
 }
