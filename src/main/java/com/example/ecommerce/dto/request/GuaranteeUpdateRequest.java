@@ -2,7 +2,11 @@ package com.example.ecommerce.dto.request;
 
 import com.example.ecommerce.enums.Currency;
 import com.example.ecommerce.enums.GuaranteeType;
-import com.example.ecommerce.validation.*;
+import com.example.ecommerce.validation.CustomerInfoAware;
+import com.example.ecommerce.validation.DateRangeAware;
+import com.example.ecommerce.validation.TenderNumberAware;
+import com.example.ecommerce.validation.ValidExpiryDate;
+import com.example.ecommerce.validation.ValidTenderNumber;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
@@ -25,7 +29,7 @@ import java.time.LocalDate;
 @AllArgsConstructor
 @ValidTenderNumber
 @ValidExpiryDate
-public class GuaranteeCreationRequest implements DateRangeAware, TenderNumberAware, CustomerInfoAware {
+public class GuaranteeUpdateRequest implements DateRangeAware, TenderNumberAware, CustomerInfoAware {
 
     @NotBlank(message = "Mã CIF không được để trống")
     @Pattern(regexp = "^[0-9]{6,12}$", message = "Mã CIF phải từ 6 đến 12 chữ số")
@@ -81,6 +85,5 @@ public class GuaranteeCreationRequest implements DateRangeAware, TenderNumberAwa
     private String contactEmail;
 
     @Pattern(regexp = "^[0-9]{10}$", message = "Số điện thoại phải chứa đúng 10 chữ số")
-    @NotBlank(message = "Số điện thoại không được để trống !")
     private String phoneNumber;
 }

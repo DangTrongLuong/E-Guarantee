@@ -1,11 +1,12 @@
 package com.example.ecommerce.mapper;
 
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
-import com.example.ecommerce.dto.response.GuaranteeSummaryResponse;
+import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
+import com.example.ecommerce.dto.response.GuaranteeSummaryResponse;
 import com.example.ecommerce.dto.response.ProcessingHistoryResponse;
-import com.example.ecommerce.entity.ProcessingHistory;
 import com.example.ecommerce.entity.GuaranteeRequest;
+import com.example.ecommerce.entity.ProcessingHistory;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
@@ -42,7 +43,10 @@ public interface GuaranteeMapper {
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
-    void updateEntityFromRequest(GuaranteeCreationRequest request, @MappingTarget GuaranteeRequest entity);
+    void updateEntityFromRequest(
+            GuaranteeUpdateRequest request,
+            @MappingTarget GuaranteeRequest entity
+    );
 
     @Mapping(target = "customerCif", source = "customer.cif")
     @Mapping(target = "customerName", source = "customer.customerName")
@@ -51,9 +55,9 @@ public interface GuaranteeMapper {
 
     List<GuaranteeSummaryResponse> toResponseList(List<GuaranteeRequest> entities);
 
-    @Mapping(target = "guaranteeId", source = "guaranteeRequest.id")
-    @Mapping(target = "performedBy", source = "performedBy.username")
-    @Mapping(target = "performedByFullName", source = "performedBy.fullName")
+
+    @Mapping(target = "guaranteeId", ignore = true)
+    @Mapping(target = "performedBy", ignore = true)
+    @Mapping(target = "performedByFullName", ignore = true)
     ProcessingHistoryResponse toHistoryResponse(ProcessingHistory entity);
 }
-
