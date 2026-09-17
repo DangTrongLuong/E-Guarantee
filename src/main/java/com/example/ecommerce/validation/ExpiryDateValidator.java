@@ -6,14 +6,14 @@ import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 
 
-public class ExpiryDateValidator implements ConstraintValidator<ValidExpiryDate, GuaranteeRequest> {
+public class ExpiryDateValidator implements ConstraintValidator<ValidExpiryDate, DateRangeAware> {
 
     @Override
-    public boolean isValid(GuaranteeRequest request, ConstraintValidatorContext context) {
-        if (request == null || request.getEffectiveDate() == null || request.getExpiryDate() == null) {
+    public boolean isValid(DateRangeAware target, ConstraintValidatorContext context) {
+        if (target == null || target.getEffectiveDate() == null || target.getExpiryDate() == null) {
             return true;
         }
-        boolean valid = request.getExpiryDate().isAfter(request.getEffectiveDate());
+        boolean valid = target.getExpiryDate().isAfter(target.getEffectiveDate());
         if (!valid) {
             context.disableDefaultConstraintViolation();
             context.buildConstraintViolationWithTemplate("Ngày hết hạn phải sau Ngày hiệu lực !")

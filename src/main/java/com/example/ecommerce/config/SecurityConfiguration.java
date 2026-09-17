@@ -63,6 +63,7 @@ public class SecurityConfiguration {
                         .jwt(jwtConfigurer -> jwtConfigurer.decoder(jwtDecoderConfiguration).jwtAuthenticationConverter(jwtAuthConverter))
                 );
         return http.build();
+
     }
     @Bean
     public AuthenticationManager authenticationManager(){

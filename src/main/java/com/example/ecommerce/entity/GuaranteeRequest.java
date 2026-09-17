@@ -3,6 +3,8 @@ package com.example.ecommerce.entity;
 import com.example.ecommerce.enums.Currency;
 import com.example.ecommerce.enums.GuaranteeStatus;
 import com.example.ecommerce.enums.GuaranteeType;
+import com.example.ecommerce.validation.DateRangeAware;
+import com.example.ecommerce.validation.TenderNumberAware;
 import com.example.ecommerce.validation.ValidExpiryDate;
 import com.example.ecommerce.validation.ValidTenderNumber;
 import jakarta.persistence.Column;
@@ -51,7 +53,9 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @ToString(exclude = {"customer", "createdBy", "updatedBy"})
-public class GuaranteeRequest implements Serializable {
+@ValidExpiryDate
+@ValidTenderNumber
+public class GuaranteeRequest implements Serializable, DateRangeAware, TenderNumberAware {
 
     @Id
     @NotBlank
@@ -129,23 +133,23 @@ public class GuaranteeRequest implements Serializable {
     @Builder.Default
     private GuaranteeStatus status = GuaranteeStatus.DRAFT;
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-//    @JoinColumn(name = "created_by", referencedColumnName = "username", nullable = true, updatable = false)
-//    private User createdBy;
-    @Size(max = 50)
-    @Column(name = "created_by", length = 50, nullable = true, updatable = false)
-    private String createdBy;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "created_by", referencedColumnName = "username", nullable = true, updatable = false)
+    private User createdBy;
+//    @Size(max = 50)
+//    @Column(name = "created_by", length = 50, nullable = true, updatable = false)
+//    private String createdBy;
 
     @NotNull
     @Column(name = "created_date", nullable = false, updatable = false)
     private LocalDateTime createdDate;
 
-//    @ManyToOne(fetch = FetchType.LAZY, optional = true)
-//    @JoinColumn(name = "updated_by", referencedColumnName = "username", nullable = true)
-//    private User updatedBy;
-    @Size(max = 50)
-    @Column(name = "updated_by", length = 50, nullable = true)
-    private String updatedBy;
+    @ManyToOne(fetch = FetchType.LAZY, optional = true)
+    @JoinColumn(name = "updated_by", referencedColumnName = "username", nullable = true)
+    private User updatedBy;
+//    @Size(max = 50)
+//    @Column(name = "updated_by", length = 50, nullable = true)
+//    private String updatedBy;
 
     @Column(name = "updated_date", nullable = true)
     private LocalDateTime updatedDate;
