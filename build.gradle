@@ -7,11 +7,11 @@ plugins {
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
-	java {
-		toolchain {
-			languageVersion = JavaLanguageVersion.of(21)
-		}
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(21)
 	}
+}
 
 configurations {
 	compileOnly {
@@ -29,8 +29,7 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-	// Liquibase — required for schema migration (do NOT use ddl-auto=update/create).
-	// Put your changelogs under src/main/resources/db/changelog/
+	// Liquibase — required for schema migration
 	implementation 'org.liquibase:liquibase-core'
 
 	// Lombok
@@ -38,10 +37,10 @@ dependencies {
 	annotationProcessor 'org.projectlombok:lombok'
 
 	// ---- Database driver ----
-	// Add your chosen driver here (left out on purpose — add it yourself), e.g.:
-	// runtimeOnly 'org.postgresql:postgresql'
-	 runtimeOnly 'com.mysql:mysql-connector-j'
-	// runtimeOnly 'com.oracle.database.jdbc:ojdbc11'
+	runtimeOnly 'com.mysql:mysql-connector-j'
+
+	// ---- Redis ----
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 	// ---- Testing ----
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
@@ -50,7 +49,7 @@ dependencies {
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 
 	// =====================================================================
-	// OPTIONAL / BONUS — uncomment whichever sections your interns attempt.
+	// OPTIONAL / BONUS
 	// =====================================================================
 
 	// --- #12 DTO mapping (MapStruct) ---
@@ -68,20 +67,20 @@ dependencies {
 	 testImplementation 'org.springframework.security:spring-security-test'
 
 	// --- #16 Scheduled Job ---
-	// No extra dependency needed — just add @EnableScheduling + @Scheduled.
+	// No extra dependency needed.
 
-	// --- #17 Spring Batch (CSV import) ---
+	// --- #17 Spring Batch ---
 	// implementation 'org.springframework.boot:spring-boot-starter-batch'
 	// testImplementation 'org.springframework.batch:spring-batch-test'
 	// implementation 'org.apache.commons:commons-csv:1.11.0'
 
-	// --- #18 Optimistic Locking (@Version) ---
-	// No extra dependency needed — it's built into Spring Data JPA.
+	// --- #18 Optimistic Locking ---
+	// No extra dependency needed.
 
 	// --- #19 Testing with Testcontainers ---
 	// testImplementation platform('org.testcontainers:testcontainers-bom:1.20.4')
 	// testImplementation 'org.testcontainers:junit-jupiter'
-	// testImplementation 'org.testcontainers:postgresql' // or 'mysql', matching your DB
+	// testImplementation 'org.testcontainers:mysql'
 
 	// --- #20 Swagger / OpenAPI ---
 	 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'

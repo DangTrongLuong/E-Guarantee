@@ -14,12 +14,20 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProcessingHistoryResponse {
+
     private Long id;
+
     private String guaranteeId;
+
     private Action action;
+
     private String performedBy;
+
     private String performedByFullName;
+
     private Role role;
+
     private LocalDateTime timestamp;
+
     private String comment;
 }

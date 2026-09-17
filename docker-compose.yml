@@ -32,6 +32,8 @@ services:
     environment:
       MYSQL_HOST: mysql
       MYSQL_PORT: 3306
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
       SERVER_PORT: 8081
       SPRING_DATA_REDIS_HOST: redis
       SPRING_DATA_REDIS_PORT: 6379
