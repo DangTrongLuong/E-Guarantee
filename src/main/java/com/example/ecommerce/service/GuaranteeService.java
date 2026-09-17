@@ -55,7 +55,7 @@ public class GuaranteeService {
         guaranteeRequest.setId(generateRequestId());
         guaranteeRequest.setCustomer(customer);
         guaranteeRequest.setStatus(GuaranteeStatus.DRAFT);
-        guaranteeRequest.setCreatedBy(currentUser.getUsername());
+        guaranteeRequest.setCreatedBy(currentUser);
         guaranteeRequest.setCreatedDate(LocalDateTime.now());
 
         if (guaranteeRequest.getCurrency() == null) {
@@ -92,7 +92,7 @@ public class GuaranteeService {
             existing.setStatus(GuaranteeStatus.DRAFT);
         }
 
-        existing.setUpdatedBy(currentUser.getUsername());
+        existing.setUpdatedBy(currentUser);
         existing.setUpdatedDate(LocalDateTime.now());
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(existing);
@@ -143,7 +143,7 @@ public class GuaranteeService {
         validateBeforeSubmit(guaranteeRequest);
 
         guaranteeRequest.setStatus(GuaranteeStatus.PENDING_APPROVAL);
-        guaranteeRequest.setUpdatedBy(currentUser.getUsername());
+        guaranteeRequest.setUpdatedBy(currentUser);
         guaranteeRequest.setUpdatedDate(LocalDateTime.now());
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(guaranteeRequest);
@@ -171,7 +171,7 @@ public class GuaranteeService {
         }
 
         guaranteeRequest.setStatus(GuaranteeStatus.APPROVED);
-        guaranteeRequest.setUpdatedBy(currentUser.getUsername());
+        guaranteeRequest.setUpdatedBy(currentUser);
         guaranteeRequest.setUpdatedDate(LocalDateTime.now());
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(guaranteeRequest);
@@ -199,7 +199,7 @@ public class GuaranteeService {
         }
 
         guaranteeRequest.setStatus(GuaranteeStatus.REJECTED);
-        guaranteeRequest.setUpdatedBy(currentUser.getUsername());
+        guaranteeRequest.setUpdatedBy(currentUser);
         guaranteeRequest.setUpdatedDate(LocalDateTime.now());
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(guaranteeRequest);
@@ -244,7 +244,7 @@ public class GuaranteeService {
         ProcessingHistory processingHistory = ProcessingHistory.builder()
                 .guaranteeRequest(guaranteeRequest)
                 .action(action)
-                .performedBy(user.getUsername())
+                .performedBy(user)
                 .role(user.getRole())
                 .timestamp(LocalDateTime.now())
                 .comment(comment)
@@ -263,8 +263,8 @@ public class GuaranteeService {
         }
 
         if (history.getPerformedBy() != null) {
-            userRepository.findByUsername(history.getPerformedBy())
-                    .ifPresent(user -> response.setPerformedByFullName(user.getFullName()));
+            response.setPerformedBy(history.getPerformedBy().getUsername());
+            response.setPerformedByFullName(history.getPerformedBy().getFullName());
         }
 
         return response;
