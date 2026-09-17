@@ -57,7 +57,7 @@ public class CustomerController {
                 .body(ApiResponse.success("Lấy danh sách thành công", customerService.getAllCustomer()));
     }
 
-    @GetMapping("/cif")
+    @GetMapping("/{cif}")
     @Operation(
             summary = "Lấy thông tin khách hàng",
             description = "Lấy thông tin chi tiết của một khách hàng theo CIF"
@@ -71,7 +71,7 @@ public class CustomerController {
                 .body(ApiResponse.success("Lấy thông tin chi tiết của một khách hàng theo CIF thành công!", customerResponse));
     }
 
-    @PutMapping("/cif")
+    @PutMapping("/{cif}")
     @Operation(
             summary = "Cập nhật khách hàng",
             description = "Cập nhật thông tin của một khách hàng theo ID"
@@ -88,12 +88,12 @@ public class CustomerController {
                 .body(ApiResponse.success("Cập nhật khách hàng thành công", customerResponse));
     }
 
-    @DeleteMapping("/cif")
+    @DeleteMapping("/{cif}")
     @Operation(
             summary = "Xóa khách hàng",
             description = "Xóa một khách hàng theo ID"
     )
-    public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable String cif){
+    public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable("cif") String cif){
         customerService.deleteCustomer(cif);
 
         return ResponseEntity
