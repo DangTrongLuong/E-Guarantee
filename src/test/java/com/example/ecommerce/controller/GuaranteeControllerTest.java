@@ -3,11 +3,16 @@ package com.example.ecommerce.controller;
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
 import com.example.ecommerce.entity.Customer;
 import com.example.ecommerce.entity.GuaranteeRequest;
+import com.example.ecommerce.entity.User;
 import com.example.ecommerce.enums.Currency;
 import com.example.ecommerce.enums.GuaranteeStatus;
 import com.example.ecommerce.enums.GuaranteeType;
+import com.example.ecommerce.enums.Role;
+import com.example.ecommerce.enums.Status;
 import com.example.ecommerce.repository.CustomerRepository;
 import com.example.ecommerce.repository.GuaranteeRequestRepository;
+import com.example.ecommerce.repository.ProcessingHistoryRepository;
+import com.example.ecommerce.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -23,6 +28,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -44,10 +50,18 @@ public class GuaranteeControllerTest {
     @Autowired
     private CustomerRepository customerRepository;
 
+    @Autowired
+    private ProcessingHistoryRepository processingHistoryRepository;
+
+    @Autowired
+    private UserRepository userRepository;
+
     private Customer sampleCustomer;
+    private static final String TEST_USERNAME = "maker_test";
 
     @BeforeEach
     void setUp() {
+        processingHistoryRepository.deleteAll();
         guaranteeRequestRepository.deleteAll();
 
         sampleCustomer = customerRepository.findById("0012345678")
@@ -61,6 +75,19 @@ public class GuaranteeControllerTest {
                         .customerName("Công ty ABC")
                         .taxCode("0101234567")
                         .build()));
+
+        userRepository.findByUsername(TEST_USERNAME).orElseGet(() -> {
+            User u = User.builder()
+                    .username(TEST_USERNAME)
+                    .password("test")
+                    .fullName("Test Marker")
+                    .role(Role.MARKER)
+                    .status(Status.ACTIVE)
+                    .build();
+            u.setCreatedAt(LocalDateTime.now());
+            u.setUpdatedAt(LocalDateTime.now());
+            return userRepository.save(u);
+        });
     }
 
     @Test
@@ -83,6 +110,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -111,11 +139,13 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", containsString("Ngày hết hạn phải sau ngày hiệu lực")));
+                .andExpect(jsonPath("$.code", is("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.data[0]", containsString("Ngày hết hạn phải sau")));
     }
 
     @Test
@@ -136,6 +166,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -160,6 +191,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -185,6 +217,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -211,11 +244,13 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", containsString("Số hiệu gói thầu là bắt buộc")));
+                .andExpect(jsonPath("$.code", is("VALIDATION_FAILED")))
+                .andExpect(jsonPath("$.data[0]", containsString("Số hiệu gói thầu là bắt buộc")));
     }
 
     @Test
@@ -251,6 +286,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/guarantees/" + existing.getId())
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -292,6 +328,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/guarantees/" + existing.getId())
+                        .with(user(TEST_USERNAME).roles("MARKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
