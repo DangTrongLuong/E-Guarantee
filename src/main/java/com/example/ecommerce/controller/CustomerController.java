@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import com.example.ecommerce.dto.response.PageResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,16 +48,19 @@ public class CustomerController {
     @GetMapping
     @Operation(
             summary = "Lấy danh sách khách hàng",
-            description = "Lấy danh sách tất cả khách hàng"
+            description = "Lấy danh sách khách hàng có phân trang (mặc định 5 bản ghi/trang)"
     )
-    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomer(){
+    public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getAllCustomer(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ){
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.success("Lấy danh sách thành công", customerService.getAllCustomer()));
+                .body(ApiResponse.success("Lấy danh sách thành công", customerService.getAllCustomer(page, size)));
     }
 
-    @GetMapping("/cif")
+    @GetMapping("/{cif}")
     @Operation(
             summary = "Lấy thông tin khách hàng",
             description = "Lấy thông tin chi tiết của một khách hàng theo CIF"
@@ -71,7 +74,7 @@ public class CustomerController {
                 .body(ApiResponse.success("Lấy thông tin chi tiết của một khách hàng theo CIF thành công!", customerResponse));
     }
 
-    @PutMapping("/cif")
+    @PutMapping("/{cif}")
     @Operation(
             summary = "Cập nhật khách hàng",
             description = "Cập nhật thông tin của một khách hàng theo ID"
@@ -88,12 +91,12 @@ public class CustomerController {
                 .body(ApiResponse.success("Cập nhật khách hàng thành công", customerResponse));
     }
 
-    @DeleteMapping("/cif")
+    @DeleteMapping("/{cif}")
     @Operation(
             summary = "Xóa khách hàng",
             description = "Xóa một khách hàng theo ID"
     )
-    public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable String cif){
+    public ResponseEntity<ApiResponse<Void>> deleteCustomer(@PathVariable("cif") String cif){
         customerService.deleteCustomer(cif);
 
         return ResponseEntity

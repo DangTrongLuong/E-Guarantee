@@ -11,4 +11,8 @@ databaseChangeLog:
   - include:
       file: changes/004-create-guarantee-history-table.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/005-update-guarantee-expiry-check.yaml
+      relativeToChangelogFile: true
+
 

@@ -4,6 +4,8 @@ import com.example.ecommerce.dto.request.CustomerCreationRequest;
 import com.example.ecommerce.dto.request.CustomerUpdateRequest;
 import com.example.ecommerce.dto.response.CustomerResponse;
 import com.example.ecommerce.entity.Customer;
+import com.example.ecommerce.dto.response.PageResponse;
+import com.example.ecommerce.exception.BadRequestException;
 import com.example.ecommerce.exception.ConflictException;
 import com.example.ecommerce.exception.ResourceNotFoundException;
 import com.example.ecommerce.mapper.CustomerMapper;
@@ -12,6 +14,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,18 +30,33 @@ public class CustomerService {
     CustomerMapper customerMapper;
 
     public CustomerResponse createCustomer(CustomerCreationRequest customerCreationRequest){
-        if(customerRepository.existsByTaxCode(customerCreationRequest.getTaxCode())){
-            throw new ConflictException("Mã số thuế đã tồn tại, vui lòng thử lại !");
+        if (customerRepository.existsById(customerCreationRequest.getCif())) {
+            throw new ConflictException("Mã CIF " + customerCreationRequest.getCif() + " đã tồn tại trong hệ thống, vui lòng kiểm tra lại!");
+        }
+
+        if (customerCreationRequest.getTaxCode() != null && !customerCreationRequest.getTaxCode().isBlank()) {
+            if (customerRepository.existsByTaxCode(customerCreationRequest.getTaxCode())) {
+                throw new ConflictException("Mã số thuế đã tồn tại, vui lòng thử lại !");
+            }
         }
 
         Customer customer = customerMapper.createCustomer(customerCreationRequest);
         return customerMapper.customerResponse(customerRepository.save(customer));
     }
 
-    public List<CustomerResponse> getAllCustomer(){
-        return customerRepository.findAll().stream()
-                .map(customerMapper::customerResponse)
-                .toList();
+    public PageResponse<CustomerResponse> getAllCustomer(int page, int size){
+        if (page < 0) {
+            throw new BadRequestException("Tham số page phải lớn hơn hoặc bằng 0");
+        }
+        if (size <= 0) {
+            throw new BadRequestException("Tham số size phải lớn hơn 0");
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Customer> customerPage = customerRepository.findAll(pageable);
+        Page<CustomerResponse> responsePage = customerPage.map(customerMapper::customerResponse);
+
+        return PageResponse.of(responsePage);
     }
 
     public CustomerResponse getCustomerByCif(String cif){
