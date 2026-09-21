@@ -156,4 +156,20 @@ public class GuaranteeController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Từ chối yêu cầu bảo lãnh thành công", response));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Xóa yêu cầu bảo lãnh (Bản nháp - DRAFT)",
+            description = "Chỉ cho phép xóa bản ghi ở trạng thái DRAFT"
+    )
+    public ResponseEntity<ApiResponse<Void>> deleteGuarantee(
+            @PathVariable String id
+    ) {
+        log.info("Nhận yêu cầu xóa hồ sơ bảo lãnh {}", id);
+        guaranteeService.deleteGuarantee(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Xóa yêu cầu bảo lãnh thành công", null));
+    }
 }
+

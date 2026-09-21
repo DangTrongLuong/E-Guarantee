@@ -126,6 +126,7 @@ public class GuaranteeService {
         return guaranteeMapper.toResponse(guaranteeRequest);
     }
 
+
     @Transactional(readOnly = true)
     public List<ProcessingHistoryResponse> getHistories(String id) {
         if (!guaranteeRequestRepository.existsById(id)) {
@@ -223,6 +224,23 @@ public class GuaranteeService {
         log.info("Từ chối yêu cầu bảo lãnh {} bởi {}", saved.getId(), currentUser.getUsername());
 
         return guaranteeMapper.toResponse(saved);
+    }
+
+    @Transactional
+    public void deleteGuarantee(String id) {
+        User currentUser = getCurrentUser();
+
+        GuaranteeRequest existing = guaranteeRequestRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu bảo lãnh với mã: " + id));
+
+        if (existing.getStatus() != GuaranteeStatus.DRAFT) {
+            throw new BadRequestException("Chỉ được xóa hồ sơ ở trạng thái Bản nháp (DRAFT)");
+        }
+
+        processingHistoryRepository.deleteByGuaranteeRequest_Id(id);
+        guaranteeRequestRepository.delete(existing);
+
+        log.info("Xóa thành công yêu cầu bảo lãnh {} ở trạng thái DRAFT bởi user: {}", id, currentUser.getUsername());
     }
 
     private User getCurrentUser() {
@@ -344,8 +362,8 @@ public class GuaranteeService {
         }
 
         if (guaranteeRequest.getExpiryDate() == null
-                || !guaranteeRequest.getExpiryDate().isAfter(guaranteeRequest.getEffectiveDate())) {
-            throw new BadRequestException("Ngày hết hạn phải sau ngày hiệu lực");
+                || guaranteeRequest.getExpiryDate().isBefore(guaranteeRequest.getEffectiveDate())) {
+            throw new BadRequestException("Ngày hết hạn phải bằng hoặc sau ngày hiệu lực");
         }
 
         if (guaranteeRequest.getGuaranteeType() == GuaranteeType.BID_BOND

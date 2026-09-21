@@ -17,7 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import com.example.ecommerce.dto.response.PageResponse;
 
 @RestController
 @RequiredArgsConstructor
@@ -48,13 +48,16 @@ public class CustomerController {
     @GetMapping
     @Operation(
             summary = "Lấy danh sách khách hàng",
-            description = "Lấy danh sách tất cả khách hàng"
+            description = "Lấy danh sách khách hàng có phân trang (mặc định 5 bản ghi/trang)"
     )
-    public ResponseEntity<ApiResponse<List<CustomerResponse>>> getAllCustomer(){
+    public ResponseEntity<ApiResponse<PageResponse<CustomerResponse>>> getAllCustomer(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "5") int size
+    ){
 
         return ResponseEntity
                 .status(HttpStatus.OK)
-                .body(ApiResponse.success("Lấy danh sách thành công", customerService.getAllCustomer()));
+                .body(ApiResponse.success("Lấy danh sách thành công", customerService.getAllCustomer(page, size)));
     }
 
     @GetMapping("/{cif}")

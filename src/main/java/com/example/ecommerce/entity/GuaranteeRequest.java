@@ -42,7 +42,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "guarantee_requests")
-@Check(name = "chk_gr_expiry_after_effective", constraints = "expiry_date > effective_date")
+@Check(name = "chk_gr_expiry_after_effective", constraints = "expiry_date >= effective_date")
 @Check(
         name = "chk_gr_tender_number_required",
         constraints = "guarantee_type <> 'BID_BOND' OR (tender_number IS NOT NULL AND CHAR_LENGTH(TRIM(tender_number)) > 0)"

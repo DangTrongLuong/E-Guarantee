@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface ProcessingHistoryRepository extends JpaRepository<ProcessingHistory, Long> {
     List<ProcessingHistory> findByGuaranteeRequest_IdOrderByTimestampAsc(String guaranteeId);
-}
+
+    void deleteByGuaranteeRequest_Id(String guaranteeId);
+}

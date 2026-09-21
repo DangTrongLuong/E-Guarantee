@@ -10,7 +10,6 @@ import com.example.ecommerce.validation.ValidTenderNumber;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -53,7 +52,6 @@ public class GuaranteeUpdateRequest implements DateRangeAware, TenderNumberAware
     private Currency currency;
 
     @NotNull(message = "Ngày hiệu lực không được để trống")
-    @FutureOrPresent(message = "Ngày hiệu lực không được là ngày trong quá khứ")
     private LocalDate effectiveDate;
 
     @NotNull(message = "Ngày hết hạn không được để trống")
