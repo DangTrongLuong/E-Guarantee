@@ -133,7 +133,8 @@ public class GuaranteeService {
         }
 
         return processingHistoryRepository
-                .findByGuaranteeRequest_IdOrderByTimestampAsc(id)
+//                .findByGuaranteeRequest_IdOrderByTimestampAsc(id)
+                .findByGuaranteeRequest_IdOrderByTimestampDesc(id)
                 .stream()
                 .map(this::toHistoryResponse)
                 .toList();
