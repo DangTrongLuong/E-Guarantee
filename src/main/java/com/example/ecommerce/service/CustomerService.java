@@ -21,6 +21,8 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import com.example.ecommerce.repository.GuaranteeRequestRepository;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -28,6 +30,7 @@ import java.util.List;
 public class CustomerService {
     CustomerRepository customerRepository;
     CustomerMapper customerMapper;
+    GuaranteeRequestRepository guaranteeRequestRepository;
 
     public CustomerResponse createCustomer(CustomerCreationRequest customerCreationRequest){
         if (customerRepository.existsById(customerCreationRequest.getCif())) {
@@ -84,6 +87,10 @@ public class CustomerService {
     public void deleteCustomer(String cif){
         Customer customer = customerRepository.findById(cif)
                 .orElseThrow(() -> new ResourceNotFoundException("Cif không tồn tại! Vui lòng thử lại."));
+
+        if (guaranteeRequestRepository.existsByCustomer_Cif(cif)) {
+            throw new ConflictException("Không thể xóa khách hàng có mã CIF " + cif + " do đang có yêu cầu bảo lãnh liên quan trong hệ thống!");
+        }
 
         customerRepository.delete(customer);
     }

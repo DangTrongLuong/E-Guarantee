@@ -48,14 +48,41 @@ public class GlobalExeptionHandler {
 
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(DataIntegrityViolationException ex) {
-        String rootMsg = ex.getMostSpecificCause().getMessage();
+        String rootMsg = ex.getMostSpecificCause() != null ? ex.getMostSpecificCause().getMessage() : ex.getMessage();
 
-        log.error("Vi phạm tính toàn vẹn dữ liệu", ex);
+        log.error("Vi phạm tính toàn vẹn dữ liệu: {}", rootMsg, ex);
 
-        if (rootMsg != null && rootMsg.contains("chk_gr_phone_number_format")) {
-            return build(HttpStatus.BAD_REQUEST, "INVALID_PHONE_NUMBER",
-                    "Số điện thoại phải chứa 10 chữ số");
+        if (rootMsg != null) {
+            if (rootMsg.contains("fk_gr_customer_cif")) {
+                return build(HttpStatus.CONFLICT, "CUSTOMER_HAS_GUARANTEES",
+                        "Không thể xóa hoặc thay đổi thông tin khách hàng do đang có yêu cầu bảo lãnh liên kết trong hệ thống!");
+            }
+            if (rootMsg.contains("fk_ph_guarantee_id")) {
+                return build(HttpStatus.CONFLICT, "GUARANTEE_HAS_HISTORIES",
+                        "Không thể xóa yêu cầu bảo lãnh do đang có lịch sử xử lý liên kết trong hệ thống!");
+            }
+            if (rootMsg.contains("fk_ph_performed_by") || rootMsg.contains("fk_gr_created_by") || rootMsg.contains("fk_gr_updated_by")) {
+                return build(HttpStatus.CONFLICT, "USER_HAS_ASSOCIATED_DATA",
+                        "Không thể xóa người dùng do đang có dữ liệu bảo lãnh hoặc lịch sử thao tác liên kết!");
+            }
+            if (rootMsg.contains("chk_gr_phone_number_format")) {
+                return build(HttpStatus.BAD_REQUEST, "INVALID_PHONE_NUMBER",
+                        "Số điện thoại phải chứa 10 chữ số");
+            }
+            if (rootMsg.contains("chk_gr_expiry_after_effective")) {
+                return build(HttpStatus.BAD_REQUEST, "INVALID_EXPIRY_DATE",
+                        "Ngày hết hạn phải bằng hoặc sau ngày hiệu lực");
+            }
+            if (rootMsg.contains("chk_gr_tender_number_required")) {
+                return build(HttpStatus.BAD_REQUEST, "MISSING_TENDER_NUMBER",
+                        "Số hiệu gói thầu là bắt buộc đối với loại bảo lãnh dự thầu (BID_BOND)");
+            }
+            if (rootMsg.contains("chk_ph_reject_comment")) {
+                return build(HttpStatus.BAD_REQUEST, "INVALID_REJECT_COMMENT",
+                        "Lý do từ chối phải từ 10 đến 500 ký tự");
+            }
         }
+
         return build(HttpStatus.CONFLICT, "DATA_INTEGRITY_VIOLATION",
                 "Dữ liệu vi phạm ràng buộc trong hệ thống (trùng dữ liệu hoặc liên kết không hợp lệ)");
     }
