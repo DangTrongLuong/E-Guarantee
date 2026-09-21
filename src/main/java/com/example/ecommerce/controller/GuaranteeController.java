@@ -69,13 +69,14 @@ public class GuaranteeController {
     @GetMapping
     @Operation(
             summary = "Lấy danh sách yêu cầu bảo lãnh",
-            description = "Hỗ trợ lọc theo mã yêu cầu, tên khách hàng, CIF, mã số thuế, trạng thái, loại bảo lãnh, khoảng ngày tạo; hỗ trợ phân trang và sắp xếp (id, createdDate, guaranteeAmount, status, guaranteeType)"
+            description = "Hỗ trợ lọc theo mã yêu cầu, tên khách hàng, CIF, mã số thuế, trạng thái, loại bảo lãnh, khoảng ngày tạo; hỗ trợ phân trang và sắp xếp nhiều trường (sortBy=field,direction lặp nhiều lần)"
     )
     public ResponseEntity<ApiResponse<PageResponse<GuaranteeSummaryResponse>>> getGuarantees(
-            @RequestParam(required = false) Map<String, Object> params
+            @RequestParam(required = false) Map<String, Object> params,
+            @RequestParam(name = "sortBy", required = false) List<String> sortByParams
     ) {
-        log.info("Nhận yêu cầu lấy danh sách yêu cầu bảo lãnh với params: {}", params);
-        PageResponse<GuaranteeSummaryResponse> response = guaranteeService.getGuarantees(params);
+        log.info("Nhận yêu cầu lấy danh sách yêu cầu bảo lãnh với params: {}, sortBy: {}", params, sortByParams);
+        PageResponse<GuaranteeSummaryResponse> response = guaranteeService.getGuarantees(params, sortByParams);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Lấy danh sách yêu cầu bảo lãnh thành công", response));
