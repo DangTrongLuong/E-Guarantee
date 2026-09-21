@@ -42,10 +42,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @Slf4j
@@ -377,9 +376,13 @@ public class GuaranteeService {
     }
 
     public PageResponse<GuaranteeSummaryResponse> getGuarantees(Map<String, Object> params) {
+        return getGuarantees(params, null);
+    }
+
+    public PageResponse<GuaranteeSummaryResponse> getGuarantees(Map<String, Object> params, List<String> sortByParams) {
         log.info("Tìm kiếm và lọc danh sách yêu cầu bảo lãnh với params: {}", params);
         Specification<GuaranteeRequest> spec = GuaranteeSpecification.filterByParams(params);
-        Pageable pageable = createPageable(params);
+        Pageable pageable = createPageable(params, sortByParams);
 
         Page<GuaranteeRequest> guaranteePage = guaranteeRequestRepository.findAll(spec, pageable);
         Page<GuaranteeSummaryResponse> summaryPage = guaranteePage.map(guaranteeMapper::toSummaryResponse);
@@ -392,7 +395,7 @@ public class GuaranteeService {
         return guaranteeMapper.toResponseList(guarantees);
     }
 
-    private Pageable createPageable(Map<String, Object> params) {
+    private Pageable createPageable(Map<String, Object> params, List<String> sortByParams) {
         int page = 0;
         int size = 5; // Mặc định phân trang 5 bản ghi theo yêu cầu
 
@@ -422,51 +425,112 @@ public class GuaranteeService {
             }
         }
 
+        Sort.Direction defaultDirection = resolveSortDirection(params);
+        List<Sort.Order> orders = buildSortOrders(params, sortByParams, defaultDirection);
+
+        if (orders.isEmpty()) {
+            orders.add(new Sort.Order(defaultDirection, "id"));
+        }
+
+        return PageRequest.of(page, size, Sort.by(orders));
+    }
+
+    private Sort.Direction resolveSortDirection(Map<String, Object> params) {
         Sort.Direction direction = Sort.Direction.DESC; // Mặc định sort DESC theo mã id (mã yêu cầu)
-        String sortBy = "id";
 
         if (params != null) {
-            String dirStr = null;
-            if (params.containsKey("sortDirection") && params.get("sortDirection") != null) {
-                dirStr = params.get("sortDirection").toString();
-            } else if (params.containsKey("direction") && params.get("direction") != null) {
-                dirStr = params.get("direction").toString();
-            } else if (params.containsKey("sortOrder") && params.get("sortOrder") != null) {
-                dirStr = params.get("sortOrder").toString();
-            } else if (params.containsKey("sort") && params.get("sort") != null) {
-                dirStr = params.get("sort").toString();
-            }
-
+            String dirStr = extractSortDirectionParam(params);
             if (dirStr != null && !dirStr.isBlank()) {
-                String normalized = dirStr.trim();
-                if ("asc".equalsIgnoreCase(normalized) || "ascending".equalsIgnoreCase(normalized)) {
-                    direction = Sort.Direction.ASC;
-                } else if ("desc".equalsIgnoreCase(normalized) || "descending".equalsIgnoreCase(normalized)) {
-                    direction = Sort.Direction.DESC;
-                } else {
-                    throw new BadRequestException("sortDirection không hợp lệ. Chỉ chấp nhận asc hoặc desc");
-                }
-            }
-
-            String sortField = null;
-            if (params.containsKey("sortBy") && params.get("sortBy") != null) {
-                sortField = params.get("sortBy").toString();
-            } else if (params.containsKey("sortField") && params.get("sortField") != null) {
-                sortField = params.get("sortField").toString();
-            } else if (params.containsKey("orderBy") && params.get("orderBy") != null) {
-                sortField = params.get("orderBy").toString();
-            }
-
-            if (sortField != null && !sortField.isBlank()) {
-                String candidate = sortField.trim();
-                Set<String> allowedSortFields = new HashSet<>(List.of("id", "createdDate", "guaranteeAmount", "status", "guaranteeType"));
-                if (!allowedSortFields.contains(candidate)) {
-                    throw new BadRequestException("sortBy không hợp lệ. Trường hợp lệ: id, createdDate, guaranteeAmount, status, guaranteeType");
-                }
-                sortBy = candidate;
+                direction = parseDirection(dirStr.trim(), "sortDirection");
             }
         }
 
-        return PageRequest.of(page, size, Sort.by(direction, sortBy));
+        return direction;
+    }
+
+    private String extractSortDirectionParam(Map<String, Object> params) {
+        if (params == null) {
+            return null;
+        }
+        if (params.containsKey("sortDirection") && params.get("sortDirection") != null) {
+            return params.get("sortDirection").toString();
+        }
+        if (params.containsKey("direction") && params.get("direction") != null) {
+            return params.get("direction").toString();
+        }
+        if (params.containsKey("sortOrder") && params.get("sortOrder") != null) {
+            return params.get("sortOrder").toString();
+        }
+        if (params.containsKey("sort") && params.get("sort") != null) {
+            return params.get("sort").toString();
+        }
+        return null;
+    }
+
+    private List<Sort.Order> buildSortOrders(Map<String, Object> params, List<String> sortByParams, Sort.Direction defaultDirection) {
+        List<Sort.Order> orders = new ArrayList<>();
+        List<String> requestedSorts = new ArrayList<>();
+
+        if (sortByParams != null) {
+            for (String value : sortByParams) {
+                if (value != null && !value.isBlank()) {
+                    requestedSorts.add(value.trim());
+                }
+            }
+        }
+
+        if (requestedSorts.isEmpty() && params != null) {
+            Object sortField = params.get("sortBy");
+            if (sortField == null) {
+                sortField = params.get("sortField");
+            }
+            if (sortField == null) {
+                sortField = params.get("orderBy");
+            }
+            if (sortField != null && !sortField.toString().isBlank()) {
+                requestedSorts.add(sortField.toString().trim());
+            }
+        }
+
+        for (String sortExpression : requestedSorts) {
+            String[] parts = sortExpression.split(",", 2);
+            String rawField = parts[0].trim();
+            if (rawField.isBlank()) {
+                continue;
+            }
+
+            String mappedField = resolveSortField(rawField);
+            Sort.Direction direction = defaultDirection;
+            if (parts.length == 2 && !parts[1].isBlank()) {
+                direction = parseDirection(parts[1].trim(), "sortBy");
+            }
+
+            orders.add(new Sort.Order(direction, mappedField));
+        }
+
+        return orders;
+    }
+
+    private String resolveSortField(String field) {
+        return switch (field) {
+            case "id", "createdDate", "guaranteeAmount", "status", "guaranteeType" -> field;
+            case "customerName", "customer_name", "tenKhachHang" -> "customer.customerName";
+            default -> throw new BadRequestException(
+                    "sortBy không hợp lệ. Trường hợp lệ: id, createdDate, guaranteeAmount, status, guaranteeType, customerName"
+            );
+        };
+    }
+
+    private Sort.Direction parseDirection(String direction, String fieldName) {
+        if ("asc".equalsIgnoreCase(direction) || "ascending".equalsIgnoreCase(direction)) {
+            return Sort.Direction.ASC;
+        }
+        if ("desc".equalsIgnoreCase(direction) || "descending".equalsIgnoreCase(direction)) {
+            return Sort.Direction.DESC;
+        }
+        if ("sortBy".equals(fieldName)) {
+            throw new BadRequestException("Hướng sắp xếp trong sortBy không hợp lệ. Chỉ chấp nhận asc hoặc desc");
+        }
+        throw new BadRequestException("sortDirection không hợp lệ. Chỉ chấp nhận asc hoặc desc");
     }
 }
