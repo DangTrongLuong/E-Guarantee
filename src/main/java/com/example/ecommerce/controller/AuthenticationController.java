@@ -1,12 +1,14 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.request.LoginRequest;
+import com.example.ecommerce.dto.request.RefreshTokenRequest;
 import com.example.ecommerce.dto.request.UserRequest;
 import com.example.ecommerce.dto.response.ApiResponse;
 import com.example.ecommerce.dto.response.LoginResponse;
 import com.example.ecommerce.dto.response.UserResponse;
 import com.example.ecommerce.service.AuthenticationService;
 import com.example.ecommerce.service.UserService;
+import com.nimbusds.jose.JOSEException;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -57,4 +59,11 @@ public class AuthenticationController {
         return ResponseEntity.ok(ApiResponse.success("Logout success", null));
     }
 
+    @PostMapping(value = "/refresh-token")
+    @Operation(summary = "Làm mới access token", description = "Sử dụng refresh token để lấy access token mới.")
+    public ResponseEntity<ApiResponse<LoginResponse>> refreshToken(@Valid @RequestBody RefreshTokenRequest request) throws ParseException, JOSEException {
+        LoginResponse response = authenticationService.refresh(request);
+        log.info("Refresh token success");
+        return ResponseEntity.ok(ApiResponse.success("Refresh token success", response));
+    }
 }
