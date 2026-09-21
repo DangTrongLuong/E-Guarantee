@@ -530,6 +530,7 @@ public class GuaranteeService {
         return orders;
     }
 
+    // Hàm sử lý chỉ lấy những field nằm trong whitelist.
     private String resolveSortField(String field) {
         return switch (field) {
             case "id", "createdDate", "guaranteeAmount", "status", "guaranteeType" -> field;
