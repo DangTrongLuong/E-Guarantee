@@ -46,7 +46,7 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/refresh-token").permitAll()
                         .requestMatchers("/auth/logout").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers("/customers").hasAnyRole("MARKER", "CHECKER")

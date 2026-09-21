@@ -66,6 +66,9 @@ public class AuthenticationService {
     public LoginResponse refresh(RefreshTokenRequest request) throws ParseException, JOSEException {
         log.info("Attempting refresh token");
         String oldRefreshToken = request.getRefreshToken();
+        if (oldRefreshToken != null && oldRefreshToken.startsWith("Bearer ")) {
+            oldRefreshToken = oldRefreshToken.substring(7).trim();
+        }
         if(oldRefreshToken == null || !jwtService.verifyRefreshToken(oldRefreshToken)){
             throw new BadCredentialsException("Invalid refresh token!");
         }
