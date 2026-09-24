@@ -16,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.cors.CorsConfigurationSource;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -27,6 +28,7 @@ public class SecurityConfiguration {
 
     private final JWTDecoderConfiguration jwtDecoderConfiguration;
     private final UserDetailServiceCustom userDetailServiceCustom;
+    private final CorsConfigurationSource corsConfigurationSource;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -44,12 +46,12 @@ public class SecurityConfiguration {
 
         http
                 .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests((authorize) -> authorize
+                .cors(cors -> cors.configurationSource(corsConfigurationSource))                .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/swagger-ui/**", "/v3/api-docs/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/auth/login", "/auth/register", "/auth/refresh-token").permitAll()
-                        .requestMatchers("/auth/logout").hasAnyRole("MARKER", "CHECKER")
-                        .requestMatchers(HttpMethod.GET, "/users").hasAnyRole("MARKER", "CHECKER")
-                        .requestMatchers("/customers").hasAnyRole("MARKER", "CHECKER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/auth/login", "/api/v1/auth/register", "/api/v1/auth/refresh-token").permitAll()
+                        .requestMatchers("/api/v1/auth/logout").hasAnyRole("MARKER", "CHECKER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/auth/users").hasAnyRole("MARKER", "CHECKER")
+                        .requestMatchers("/api/v1/customers").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees").hasRole("MARKER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/guarantees/**").hasRole("MARKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/submit").hasRole("MARKER")

@@ -9,5 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface GuaranteeRequestRepository extends JpaRepository<GuaranteeRequest, String>, JpaSpecificationExecutor<GuaranteeRequest> {
     long count();
+    boolean existsByCustomer_Cif(String cif);
     long countByStatus(GuaranteeStatus status);
 }

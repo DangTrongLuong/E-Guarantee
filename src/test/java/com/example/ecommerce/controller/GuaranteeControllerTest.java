@@ -1,6 +1,7 @@
 package com.example.ecommerce.controller;
 
 import com.example.ecommerce.dto.request.GuaranteeCreationRequest;
+import com.example.ecommerce.dto.request.GuaranteeUpdateRequest;
 import com.example.ecommerce.entity.Customer;
 import com.example.ecommerce.entity.GuaranteeRequest;
 import com.example.ecommerce.entity.User;
@@ -29,6 +30,7 @@ import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -147,7 +149,36 @@ public class GuaranteeControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.code", is("VALIDATION_FAILED")))
-                .andExpect(jsonPath("$.data[0]", containsString("Ngày hết hạn phải sau")));
+                .andExpect(jsonPath("$.data[0]", containsString("Ngày hết hạn phải bằng hoặc sau")));
+    }
+
+    @Test
+    @DisplayName("Tạo mới thành công khi Ngày hiệu lực và Ngày hết hạn trùng nhau (cùng 1 ngày)")
+    void createGuarantee_SameDayEffectiveAndExpiry_Success() throws Exception {
+        LocalDate today = LocalDate.now();
+        GuaranteeCreationRequest request = GuaranteeCreationRequest.builder()
+                .customerCif("0012345678")
+                .customerName("Công ty ABC")
+                .taxCode("0101234567")
+                .guaranteeType(GuaranteeType.PERFORMANCE)
+                .guaranteeAmount(new BigDecimal("1000000"))
+                .currency(Currency.VND)
+                .effectiveDate(today)
+                .expiryDate(today)
+                .purpose("Bảo lãnh trong ngày")
+                .beneficiaryName("Ban quản lý dự án XYZ")
+                .contactEmail("contact@abc.com")
+                .phoneNumber("0912345678")
+                .build();
+
+        mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.status", is("DRAFT")))
+                .andExpect(jsonPath("$.data.guaranteeDays", is(0)));
     }
 
     @Test
@@ -277,7 +308,7 @@ public class GuaranteeControllerTest {
                 .createdDate(LocalDateTime.now())
                 .build());
 
-        GuaranteeCreationRequest updateRequest = GuaranteeCreationRequest.builder()
+        GuaranteeUpdateRequest updateRequest = GuaranteeUpdateRequest.builder()
                 .customerCif("0012345678")
                 .customerName("Công ty ABC")
                 .taxCode("0101234567")
@@ -319,7 +350,7 @@ public class GuaranteeControllerTest {
                 .createdDate(LocalDateTime.now())
                 .build());
 
-        GuaranteeCreationRequest updateRequest = GuaranteeCreationRequest.builder()
+        GuaranteeUpdateRequest updateRequest = GuaranteeUpdateRequest.builder()
                 .customerCif("0012345678")
                 .customerName("Công ty ABC")
                 .taxCode("0101234567")
@@ -340,6 +371,102 @@ public class GuaranteeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.status", is("DRAFT")));
+    }
+
+    @Test
+    @DisplayName("Cập nhật hồ sơ với Ngày hiệu lực trong quá khứ - Thành công")
+    void updateGuarantee_PastEffectiveDate_Success() throws Exception {
+        LocalDate pastEffectiveDate = LocalDate.now().minusDays(5);
+        LocalDate futureExpiryDate = LocalDate.now().plusDays(30);
+
+        GuaranteeRequest existing = guaranteeRequestRepository.save(GuaranteeRequest.builder()
+                .id("GR-2026-000005")
+                .customer(sampleCustomer)
+                .guaranteeType(GuaranteeType.OTHER)
+                .guaranteeAmount(new BigDecimal("5000000"))
+                .currency(Currency.VND)
+                .effectiveDate(pastEffectiveDate)
+                .expiryDate(futureExpiryDate)
+                .purpose("Hồ sơ tạo trong quá khứ")
+                .beneficiaryName("Bên thụ hưởng")
+                .contactEmail("contact@abc.com")
+                .status(GuaranteeStatus.DRAFT)
+                .createdDate(LocalDateTime.now().minusDays(5))
+                .build());
+
+        GuaranteeUpdateRequest updateRequest = GuaranteeUpdateRequest.builder()
+                .customerCif("0012345678")
+                .customerName("Công ty ABC")
+                .taxCode("0101234567")
+                .guaranteeType(GuaranteeType.OTHER)
+                .guaranteeAmount(new BigDecimal("6000000"))
+                .currency(Currency.VND)
+                .effectiveDate(pastEffectiveDate)
+                .expiryDate(futureExpiryDate)
+                .purpose("Hồ sơ đã cập nhật thông tin mới giữ nguyên ngày hiệu lực quá khứ")
+                .beneficiaryName("Bên thụ hưởng")
+                .contactEmail("contact@abc.com")
+                .build();
+
+        mockMvc.perform(put("/api/v1/guarantees/" + existing.getId())
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.data.guaranteeAmount", is(6000000)));
+    }
+
+    @Test
+    @DisplayName("Xóa thành công yêu cầu bảo lãnh ở trạng thái DRAFT")
+    void deleteGuarantee_Draft_Success() throws Exception {
+        GuaranteeRequest existing = guaranteeRequestRepository.save(GuaranteeRequest.builder()
+                .id("GR-2026-000003")
+                .customer(sampleCustomer)
+                .guaranteeType(GuaranteeType.BID_BOND)
+                .tenderNumber("TB-2026-003")
+                .guaranteeAmount(new BigDecimal("3000000"))
+                .currency(Currency.VND)
+                .effectiveDate(LocalDate.now())
+                .expiryDate(LocalDate.now().plusDays(30))
+                .purpose("Xóa bản nháp")
+                .beneficiaryName("Bên thụ hưởng")
+                .contactEmail("contact@abc.com")
+                .status(GuaranteeStatus.DRAFT)
+                .createdDate(LocalDateTime.now())
+                .build());
+
+        mockMvc.perform(delete("/api/v1/guarantees/" + existing.getId())
+                        .with(user(TEST_USERNAME).roles("MARKER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.success", is(true)))
+                .andExpect(jsonPath("$.message", containsString("Xóa yêu cầu bảo lãnh thành công")));
+    }
+
+    @Test
+    @DisplayName("Xóa thất bại khi yêu cầu bảo lãnh không ở trạng thái DRAFT")
+    void deleteGuarantee_NonDraft_BadRequest() throws Exception {
+        GuaranteeRequest existing = guaranteeRequestRepository.save(GuaranteeRequest.builder()
+                .id("GR-2026-000004")
+                .customer(sampleCustomer)
+                .guaranteeType(GuaranteeType.BID_BOND)
+                .tenderNumber("TB-2026-004")
+                .guaranteeAmount(new BigDecimal("3000000"))
+                .currency(Currency.VND)
+                .effectiveDate(LocalDate.now())
+                .expiryDate(LocalDate.now().plusDays(30))
+                .purpose("Không thể xóa")
+                .beneficiaryName("Bên thụ hưởng")
+                .contactEmail("contact@abc.com")
+                .status(GuaranteeStatus.PENDING_APPROVAL)
+                .createdDate(LocalDateTime.now())
+                .build());
+
+        mockMvc.perform(delete("/api/v1/guarantees/" + existing.getId())
+                        .with(user(TEST_USERNAME).roles("MARKER")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.success", is(false)))
+                .andExpect(jsonPath("$.message", containsString("Chỉ được xóa hồ sơ ở trạng thái Bản nháp")));
     }
 
     @Test

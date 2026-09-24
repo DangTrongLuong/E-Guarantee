@@ -27,7 +27,7 @@ import java.text.ParseException;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @Tag(name = "Auth", description = "Authentication endpoints")
 public class AuthenticationController {
     private final AuthenticationService authenticationService;
