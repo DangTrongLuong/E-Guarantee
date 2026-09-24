@@ -82,6 +82,21 @@ public class GuaranteeController {
                 .body(ApiResponse.success("Lấy danh sách yêu cầu bảo lãnh thành công", response));
     }
 
+    @GetMapping(value = {"/status-counts", "/status-count", "/counts"})
+    @Operation(
+            summary = "Lấy số lượng yêu cầu bảo lãnh theo từng trạng thái",
+            description = "Trả về tổng số lượng bản ghi (ALL) và số lượng theo từng trạng thái (DRAFT, PENDING_APPROVAL, APPROVED, REJECTED). Hỗ trợ các tham số lọc tìm kiếm (từ khóa, mã khách hàng, ngày tạo, loại bảo lãnh, ...)"
+    )
+    public ResponseEntity<ApiResponse<Map<String, Long>>> getGuaranteeStatusCounts(
+            @RequestParam(required = false) Map<String, Object> params
+    ) {
+        log.info("Nhận yêu cầu lấy số lượng yêu cầu bảo lãnh theo trạng thái với params: {}", params);
+        Map<String, Long> response = guaranteeService.getGuaranteeStatusCounts(params);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Lấy số lượng yêu cầu bảo lãnh theo trạng thái thành công", response));
+    }
+
     @GetMapping("/{id}")
     @Operation(
             summary = "Lấy chi tiết yêu cầu bảo lãnh",

@@ -43,6 +43,8 @@ import org.springframework.data.jpa.domain.Specification;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -539,6 +541,53 @@ public class GuaranteeService {
                     "sortBy không hợp lệ. Trường hợp lệ: id, createdDate, guaranteeAmount, status, guaranteeType, customerName"
             );
         };
+    }
+
+    @Transactional(readOnly = true)
+    public Map<String, Long> getGuaranteeStatusCounts(Map<String, Object> params) {
+        Map<String, Object> filterParams = cleanFilterParamsForStatusCount(params);
+        Map<String, Long> result = new LinkedHashMap<>();
+
+        boolean hasFilters = !filterParams.isEmpty();
+
+        long allCount = hasFilters
+                ? guaranteeRequestRepository.count(GuaranteeSpecification.filterByParams(filterParams))
+                : guaranteeRequestRepository.count();
+
+        result.put("ALL", allCount);
+
+        for (GuaranteeStatus status : GuaranteeStatus.values()) {
+            long count;
+            if (hasFilters) {
+                Map<String, Object> statusParams = new HashMap<>(filterParams);
+                statusParams.put("status", status.name());
+                count = guaranteeRequestRepository.count(GuaranteeSpecification.filterByParams(statusParams));
+            } else {
+                count = guaranteeRequestRepository.countByStatus(status);
+            }
+            result.put(status.name(), count);
+        }
+
+        return result;
+    }
+
+    private Map<String, Object> cleanFilterParamsForStatusCount(Map<String, Object> params) {
+        if (params == null || params.isEmpty()) {
+            return new HashMap<>();
+        }
+        Map<String, Object> cleaned = new HashMap<>(params);
+        cleaned.remove("page");
+        cleaned.remove("size");
+        cleaned.remove("sortBy");
+        cleaned.remove("sortField");
+        cleaned.remove("orderBy");
+        cleaned.remove("sortDirection");
+        cleaned.remove("direction");
+        cleaned.remove("sortOrder");
+        cleaned.remove("sort");
+        cleaned.remove("status");
+        cleaned.remove("trangThai");
+        return cleaned;
     }
 
     private Sort.Direction parseDirection(String direction, String fieldName) {
