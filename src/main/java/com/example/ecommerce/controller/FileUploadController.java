@@ -30,9 +30,10 @@ public class FileUploadController {
     @Operation(summary = "Upload 1 hoặc nhiều file bất đồng bộ đa luồng qua Server (Tối đa 100MB/file, tổng 200MB)")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<FileUploadBatchResponse>> uploadFiles(
-            @RequestParam("files") List<MultipartFile> files) {
+            @RequestParam("files") List<MultipartFile> files,
+            @RequestParam(value = "isDigitallySigned", required = false, defaultValue = "false") Boolean isDigitallySigned) {
 
-        FileUploadBatchResponse response = fileUploadService.uploadFiles(files);
+        FileUploadBatchResponse response = fileUploadService.uploadFiles(files, isDigitallySigned);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Upload danh sách file thành công", response));
     }

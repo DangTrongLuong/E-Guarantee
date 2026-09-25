@@ -161,6 +161,7 @@ public class GuaranteeService {
                 .fileSize(file.getFileSize())
                 .format(file.getFormat())
                 .resourceType(file.getResourceType())
+                .isDigitallySigned(file.getIsDigitallySigned())
                 .createdAt(file.getCreatedAt())
                 .build();
     }

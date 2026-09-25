@@ -9,11 +9,11 @@ import java.util.concurrent.CompletableFuture;
 
 public interface FileUploadService {
 
-    FileUploadBatchResponse uploadFiles(List<MultipartFile> files);
+    FileUploadBatchResponse uploadFiles(List<MultipartFile> files, Boolean isDigitallySigned);
 
-    FileUploadResponse uploadSingleFile(MultipartFile file);
+    FileUploadResponse uploadSingleFile(MultipartFile file, Boolean isDigitallySigned);
 
-    CompletableFuture<FileUploadResponse> uploadSingleFileAsync(MultipartFile file);
+    CompletableFuture<FileUploadResponse> uploadSingleFileAsync(MultipartFile file, Boolean isDigitallySigned);
 
     boolean deleteFile(String publicId);
 }
