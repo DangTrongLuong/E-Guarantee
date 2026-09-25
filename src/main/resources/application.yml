@@ -1,6 +1,12 @@
 spring:
   application:
     name: eguarantee
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 200MB
+      enabled: true
+
   config:
     import: optional:file:.env[.properties]
 
@@ -30,6 +36,12 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
+
+cloudinary:
+  cloud-name: ${CLOUD_NAME}
+  api-key: ${CLOUD_API_KEY}
+  api-secret: ${CLOUD_API_SECRET}
+
 
 secretkey: ${SECRET_KEY}
 

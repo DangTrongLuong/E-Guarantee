@@ -48,6 +48,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.example.ecommerce.dto.response.GuaranteeFileResponse;
+import com.example.ecommerce.entity.GuaranteeFile;
+import com.example.ecommerce.repository.GuaranteeFileRepository;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -59,6 +63,7 @@ public class GuaranteeService {
     GuaranteeMapper guaranteeMapper;
     UserRepository userRepository;
     ProcessingHistoryRepository processingHistoryRepository;
+    GuaranteeFileRepository guaranteeFileRepository;
 
     @Transactional
     public GuaranteeResponse createGuarantee(GuaranteeCreationRequest request) {
@@ -79,11 +84,16 @@ public class GuaranteeService {
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(guaranteeRequest);
 
+        if (request.getPublicIds() != null && !request.getPublicIds().isEmpty()) {
+            attachFilesToGuarantee(saved.getId(), request.getPublicIds());
+        }
+
         createHistory(saved, Action.CREATE, currentUser, null);
 
-        log.info("Tạo thành công yêu cầu bảo lãnh ở trạng thái DRAFT: {} bởi user: {}", saved.getId(), currentUser.getUsername());
+        log.info("Tạo thành công yêu cầu bảo lãnh ở trạng thái DRAFT: {} bởi user: {}", saved.getId(),
+                currentUser.getUsername());
 
-        return guaranteeMapper.toResponse(saved);
+        return enrichGuaranteeResponse(guaranteeMapper.toResponse(saved), saved.getId());
     }
 
     @Transactional
@@ -95,7 +105,8 @@ public class GuaranteeService {
 
         if (existing.getStatus() != GuaranteeStatus.DRAFT
                 && existing.getStatus() != GuaranteeStatus.REJECTED) {
-            throw new BadRequestException("Chỉ được chỉnh sửa hồ sơ ở trạng thái Bản nháp (DRAFT) hoặc Bị từ chối (REJECTED)");
+            throw new BadRequestException(
+                    "Chỉ được chỉnh sửa hồ sơ ở trạng thái Bản nháp (DRAFT) hoặc Bị từ chối (REJECTED)");
         }
 
         Customer customer = getAndValidateCustomer(request);
@@ -112,11 +123,16 @@ public class GuaranteeService {
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(existing);
 
+        if (request.getPublicIds() != null && !request.getPublicIds().isEmpty()) {
+            attachFilesToGuarantee(saved.getId(), request.getPublicIds());
+        }
+
         createHistory(saved, Action.UPDATE, currentUser, null);
 
-        log.info("Cập nhật thành công yêu cầu bảo lãnh {}: trạng thái {} bởi user: {}", saved.getId(), saved.getStatus(), currentUser.getUsername());
+        log.info("Cập nhật thành công yêu cầu bảo lãnh {}: trạng thái {} bởi user: {}", saved.getId(),
+                saved.getStatus(), currentUser.getUsername());
 
-        return guaranteeMapper.toResponse(saved);
+        return enrichGuaranteeResponse(guaranteeMapper.toResponse(saved), saved.getId());
     }
 
     @Transactional(readOnly = true)
@@ -124,9 +140,41 @@ public class GuaranteeService {
         GuaranteeRequest guaranteeRequest = guaranteeRequestRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy yêu cầu bảo lãnh với mã: " + id));
 
-        return guaranteeMapper.toResponse(guaranteeRequest);
+        return enrichGuaranteeResponse(guaranteeMapper.toResponse(guaranteeRequest), id);
     }
 
+    private GuaranteeResponse enrichGuaranteeResponse(GuaranteeResponse response, String guaranteeId) {
+        if (response != null && guaranteeId != null) {
+            List<GuaranteeFile> files = guaranteeFileRepository.findByGuaranteeId(guaranteeId);
+            response.setFiles(files.stream().map(this::toFileResponse).toList());
+        }
+        return response;
+    }
+
+    private GuaranteeFileResponse toFileResponse(GuaranteeFile file) {
+        return GuaranteeFileResponse.builder()
+                .id(file.getId())
+                .guaranteeId(file.getGuaranteeId())
+                .fileName(file.getFileName())
+                .fileUrl(file.getFileUrl())
+                .publicId(file.getPublicId())
+                .fileSize(file.getFileSize())
+                .format(file.getFormat())
+                .resourceType(file.getResourceType())
+                .createdAt(file.getCreatedAt())
+                .build();
+    }
+
+    private void attachFilesToGuarantee(String guaranteeId, List<String> publicIds) {
+        for (String publicId : publicIds) {
+            if (publicId != null && !publicId.isBlank()) {
+                guaranteeFileRepository.findByPublicId(publicId.trim()).ifPresent(file -> {
+                    file.setGuaranteeId(guaranteeId);
+                    guaranteeFileRepository.save(file);
+                });
+            }
+        }
+    }
 
     @Transactional(readOnly = true)
     public List<ProcessingHistoryResponse> getHistories(String id) {
@@ -135,7 +183,7 @@ public class GuaranteeService {
         }
 
         return processingHistoryRepository
-//                .findByGuaranteeRequest_IdOrderByTimestampAsc(id)
+                // .findByGuaranteeRequest_IdOrderByTimestampAsc(id)
                 .findByGuaranteeRequest_IdOrderByTimestampDesc(id)
                 .stream()
                 .map(this::toHistoryResponse)
@@ -169,7 +217,7 @@ public class GuaranteeService {
 
         log.info("Gửi phê duyệt thành công yêu cầu bảo lãnh {} bởi {}", saved.getId(), currentUser.getUsername());
 
-        return guaranteeMapper.toResponse(saved);
+        return enrichGuaranteeResponse(guaranteeMapper.toResponse(saved), saved.getId());
     }
 
     @Transactional
@@ -197,7 +245,7 @@ public class GuaranteeService {
 
         log.info("Phê duyệt thành công yêu cầu bảo lãnh {} bởi {}", saved.getId(), currentUser.getUsername());
 
-        return guaranteeMapper.toResponse(saved);
+        return enrichGuaranteeResponse(guaranteeMapper.toResponse(saved), saved.getId());
     }
 
     @Transactional
@@ -225,7 +273,7 @@ public class GuaranteeService {
 
         log.info("Từ chối yêu cầu bảo lãnh {} bởi {}", saved.getId(), currentUser.getUsername());
 
-        return guaranteeMapper.toResponse(saved);
+        return enrichGuaranteeResponse(guaranteeMapper.toResponse(saved), saved.getId());
     }
 
     @Transactional
@@ -273,8 +321,7 @@ public class GuaranteeService {
             GuaranteeRequest guaranteeRequest,
             Action action,
             User user,
-            String comment
-    ) {
+            String comment) {
         ProcessingHistory processingHistory = ProcessingHistory.builder()
                 .guaranteeRequest(guaranteeRequest)
                 .action(action)
@@ -286,7 +333,8 @@ public class GuaranteeService {
 
         processingHistoryRepository.save(processingHistory);
 
-        log.info("Lưu lịch sử: action={}, user={}, guaranteeId={}", action, user.getUsername(), guaranteeRequest.getId());
+        log.info("Lưu lịch sử: action={}, user={}, guaranteeId={}", action, user.getUsername(),
+                guaranteeRequest.getId());
     }
 
     private ProcessingHistoryResponse toHistoryResponse(ProcessingHistory history) {
@@ -308,13 +356,13 @@ public class GuaranteeService {
         Customer customer = customerRepository.findById(request.getCustomerCif())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Khách hàng với mã CIF " + request.getCustomerCif()
-                                + " không tồn tại trong hệ thống. Vui lòng kiểm tra lại!"
-                ));
+                                + " không tồn tại trong hệ thống. Vui lòng kiểm tra lại!"));
 
         if (request.getCustomerName() != null && !request.getCustomerName().isBlank()) {
             if (customer.getCustomerName() != null && !customer.getCustomerName().isBlank()) {
                 if (!customer.getCustomerName().trim().equalsIgnoreCase(request.getCustomerName().trim())) {
-                    throw new BadRequestException("Tên khách hàng không khớp với thông tin khách hàng có mã CIF " + request.getCustomerCif());
+                    throw new BadRequestException(
+                            "Tên khách hàng không khớp với thông tin khách hàng có mã CIF " + request.getCustomerCif());
                 }
             }
         }
@@ -322,7 +370,8 @@ public class GuaranteeService {
         if (request.getTaxCode() != null && !request.getTaxCode().isBlank()) {
             if (customer.getTaxCode() != null && !customer.getTaxCode().isBlank()) {
                 if (!customer.getTaxCode().trim().equalsIgnoreCase(request.getTaxCode().trim())) {
-                    throw new BadRequestException("Mã số thuế không khớp với thông tin khách hàng có mã CIF " + request.getCustomerCif());
+                    throw new BadRequestException(
+                            "Mã số thuế không khớp với thông tin khách hàng có mã CIF " + request.getCustomerCif());
                 }
             }
         }
@@ -370,7 +419,7 @@ public class GuaranteeService {
 
         if (guaranteeRequest.getGuaranteeType() == GuaranteeType.BID_BOND
                 && (guaranteeRequest.getTenderNumber() == null
-                || guaranteeRequest.getTenderNumber().isBlank())) {
+                        || guaranteeRequest.getTenderNumber().isBlank())) {
             throw new BadRequestException("Số hiệu gói thầu là bắt buộc khi loại bảo lãnh là BID_BOND");
         }
 
@@ -389,10 +438,14 @@ public class GuaranteeService {
             throw new BadRequestException("Email liên hệ không được để trống");
         }
 
+        if (!guaranteeRequest.getContactEmail().matches("^[a-zA-Z0-9._%+-]+@gmail\\.com$")) {
+            throw new BadRequestException("Email liên hệ phải có định dạng @gmail.com");
+        }
+
         if (guaranteeRequest.getPhoneNumber() != null
                 && !guaranteeRequest.getPhoneNumber().isBlank()
-                && !guaranteeRequest.getPhoneNumber().matches("^[0-9]{10}$")) {
-            throw new BadRequestException("Số điện thoại phải chứa 10 chữ số");
+                && !guaranteeRequest.getPhoneNumber().matches("^[0-9]{9,15}$")) {
+            throw new BadRequestException("Số điện thoại phải chứa từ 9 đến 15 chữ số");
         }
     }
 
@@ -488,7 +541,8 @@ public class GuaranteeService {
         return null;
     }
 
-    private List<Sort.Order> buildSortOrders(Map<String, Object> params, List<String> sortByParams, Sort.Direction defaultDirection) {
+    private List<Sort.Order> buildSortOrders(Map<String, Object> params, List<String> sortByParams,
+            Sort.Direction defaultDirection) {
         List<Sort.Order> orders = new ArrayList<>();
         List<String> requestedSorts = new ArrayList<>();
 
@@ -538,8 +592,7 @@ public class GuaranteeService {
             case "id", "createdDate", "guaranteeAmount", "status", "guaranteeType" -> field;
             case "customerName", "customer_name", "tenKhachHang" -> "customer.customerName";
             default -> throw new BadRequestException(
-                    "sortBy không hợp lệ. Trường hợp lệ: id, createdDate, guaranteeAmount, status, guaranteeType, customerName"
-            );
+                    "sortBy không hợp lệ. Trường hợp lệ: id, createdDate, guaranteeAmount, status, guaranteeType, customerName");
         };
     }
 

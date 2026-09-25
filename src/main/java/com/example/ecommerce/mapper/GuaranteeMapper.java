@@ -34,6 +34,7 @@ public interface GuaranteeMapper {
     @Mapping(target = "updatedBy", source = "updatedBy.username")
     @Mapping(target = "updatedByFullName", source = "updatedBy.fullName")
     @Mapping(target = "guaranteeDays", ignore = true)
+    @Mapping(target = "files", ignore = true)
     GuaranteeResponse toResponse(GuaranteeRequest entity);
 
     @Mapping(target = "id", ignore = true)
