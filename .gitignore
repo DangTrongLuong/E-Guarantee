@@ -34,3 +34,7 @@ bin/
 
 ### Local env ###
 .env
+
+*.docx
+
+

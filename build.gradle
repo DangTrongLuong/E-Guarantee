@@ -85,9 +85,8 @@ dependencies {
 	// --- #20 Swagger / OpenAPI ---
 	 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
 
-	// Redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
+	// Cloudinary
+	implementation 'com.cloudinary:cloudinary-http44:1.39.0'
 }
 
 tasks.named('test') {

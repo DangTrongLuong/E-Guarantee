@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Data
 @Builder
@@ -44,6 +45,7 @@ public class GuaranteeResponse {
     private String updatedBy;
     private String updatedByFullName;
     private LocalDateTime updatedDate;
+    private List<GuaranteeFileResponse> files;
 
     public Long getGuaranteeDays() {
         if (effectiveDate != null && expiryDate != null) {

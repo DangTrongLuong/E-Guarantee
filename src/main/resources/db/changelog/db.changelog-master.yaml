@@ -14,5 +14,8 @@ databaseChangeLog:
   - include:
       file: changes/005-update-guarantee-expiry-check.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/006-create-guarantee-files-table.yaml
+      relativeToChangelogFile: true
 
 
