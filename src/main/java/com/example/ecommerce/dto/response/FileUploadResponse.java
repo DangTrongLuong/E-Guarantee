@@ -18,6 +18,7 @@ public class FileUploadResponse {
     private String format;
     private Long fileSize;
     private String resourceType;
+    private Boolean isDigitallySigned;
     private LocalDateTime uploadedAt;
     private String status;
     private String errorMessage;

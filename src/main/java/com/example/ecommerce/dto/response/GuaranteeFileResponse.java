@@ -20,5 +20,6 @@ public class GuaranteeFileResponse {
     private Long fileSize;
     private String format;
     private String resourceType;
+    private Boolean isDigitallySigned;
     private LocalDateTime createdAt;
 }

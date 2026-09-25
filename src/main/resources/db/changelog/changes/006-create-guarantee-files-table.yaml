@@ -51,6 +51,12 @@ databaseChangeLog:
                   constraints:
                     nullable: true
               - column:
+                  name: is_digitally_signed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
                   name: created_at
                   type: DATETIME
                   constraints:

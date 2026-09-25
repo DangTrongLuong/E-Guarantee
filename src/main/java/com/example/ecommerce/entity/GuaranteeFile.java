@@ -51,6 +51,10 @@ public class GuaranteeFile implements Serializable {
     @Column(name = "resource_type", length = 50)
     private String resourceType;
 
+    @Column(name = "is_digitally_signed", nullable = false)
+    @Builder.Default
+    private Boolean isDigitallySigned = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

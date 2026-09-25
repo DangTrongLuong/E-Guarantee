@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -46,13 +47,14 @@ public class FileUploadServiceImpl implements FileUploadService {
             "pdf", "doc", "docx", "xls", "xlsx", "xml");
 
     @Override
-    public FileUploadBatchResponse uploadFiles(List<MultipartFile> files) {
+    public FileUploadBatchResponse uploadFiles(List<MultipartFile> files, Boolean isDigitallySigned) {
         validateBatchFiles(files);
+        boolean signed = Boolean.TRUE.equals(isDigitallySigned);
 
         long totalSizeBytes = files.stream().mapToLong(MultipartFile::getSize).sum();
 
         List<CompletableFuture<FileUploadResponse>> futures = files.stream()
-                .map(this::uploadSingleFileAsync)
+                .map(file -> uploadSingleFileAsync(file, signed))
                 .toList();
 
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(
@@ -80,18 +82,19 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @Override
-    public FileUploadResponse uploadSingleFile(MultipartFile file) {
+    public FileUploadResponse uploadSingleFile(MultipartFile file, Boolean isDigitallySigned) {
         validateSingleFile(file);
-        return uploadToCloudinary(file);
+        return uploadToCloudinary(file, Boolean.TRUE.equals(isDigitallySigned));
     }
 
     @Override
-    public CompletableFuture<FileUploadResponse> uploadSingleFileAsync(MultipartFile file) {
+    public CompletableFuture<FileUploadResponse> uploadSingleFileAsync(MultipartFile file, Boolean isDigitallySigned) {
         validateSingleFile(file);
-        return CompletableFuture.supplyAsync(() -> uploadToCloudinary(file), fileUploadExecutor);
+        return CompletableFuture.supplyAsync(() -> uploadToCloudinary(file, Boolean.TRUE.equals(isDigitallySigned)), fileUploadExecutor);
     }
 
     @Override
+    @Transactional
     public boolean deleteFile(String publicId) {
         if (!StringUtils.hasText(publicId)) {
             throw new BadRequestException("publicId của file không được để trống!");
@@ -112,14 +115,16 @@ public class FileUploadServiceImpl implements FileUploadService {
             if (isOk) {
                 guaranteeFileRepository.deleteByPublicId(publicId);
                 log.info("Xóa file thành công trên Cloudinary & DB (publicId: {})", publicId);
+                return true;
             } else {
-                log.warn("Không tìm thấy hoặc không xóa được file trên Cloudinary (publicId: {})", publicId);
+                guaranteeFileRepository.findByPublicId(publicId).ifPresent(guaranteeFileRepository::delete);
+                log.warn("Không tìm thấy file trên Cloudinary (publicId: {}), đã dọn dẹp bản ghi DB.", publicId);
+                return true;
             }
-            return isOk;
 
         } catch (IOException e) {
             log.error("Lỗi khi xóa file trên Cloudinary (publicId: {}): {}", publicId, e.getMessage(), e);
-            return false;
+            throw new BadRequestException("Lỗi khi xóa file trên Cloudinary: " + e.getMessage());
         }
     }
 
@@ -165,7 +170,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @SuppressWarnings("unchecked")
-    private FileUploadResponse uploadToCloudinary(MultipartFile file) {
+    private FileUploadResponse uploadToCloudinary(MultipartFile file, boolean isDigitallySigned) {
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename).toLowerCase();
 
@@ -211,6 +216,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                     .fileSize(fileSize)
                     .format(format)
                     .resourceType(resourceType)
+                    .isDigitallySigned(isDigitallySigned)
                     .build();
 
             GuaranteeFile savedFile = guaranteeFileRepository.save(guaranteeFile);
@@ -222,6 +228,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                     .format(format)
                     .fileSize(fileSize)
                     .resourceType(resourceType)
+                    .isDigitallySigned(savedFile.getIsDigitallySigned())
                     .uploadedAt(savedFile.getCreatedAt())
                     .status("SUCCESS")
                     .build();
