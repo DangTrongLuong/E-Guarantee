@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: 06-create-table-guarantee-files
       author: system
+      validCheckSum: ANY
       comment: Tạo bảng guarantee_files lưu trữ thông tin file đính kèm với guarantee_requests
       changes:
         - createTable:
@@ -68,6 +69,7 @@ databaseChangeLog:
   - changeSet:
       id: 06-fk-guarantee-files-guarantee-requests
       author: system
+      validCheckSum: ANY
       comment: FK guarantee_files.guarantee_id -> guarantee_requests.id
       changes:
         - addForeignKeyConstraint:
@@ -82,3 +84,25 @@ databaseChangeLog:
         - dropForeignKeyConstraint:
             baseTableName: guarantee_files
             constraintName: fk_gf_guarantee_id
+
+  - changeSet:
+      id: 06-add-is-digitally-signed-column
+      author: system
+      comment: Bổ sung cột is_digitally_signed vào bảng guarantee_files
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: guarantee_files
+                columnName: is_digitally_signed
+      changes:
+        - addColumn:
+            tableName: guarantee_files
+            columns:
+              - column:
+                  name: is_digitally_signed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+
