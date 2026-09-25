@@ -222,6 +222,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             GuaranteeFile savedFile = guaranteeFileRepository.save(guaranteeFile);
 
             return FileUploadResponse.builder()
+                    .id(savedFile.getId())
                     .fileName(originalFilename)
                     .fileUrl(fileUrl)
                     .publicId(publicId)

@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class FileUploadResponse {
+    private Long id;
     private String fileName;
     private String fileUrl;
     private String publicId;
