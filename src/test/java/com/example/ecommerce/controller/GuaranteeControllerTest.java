@@ -59,11 +59,15 @@ public class GuaranteeControllerTest {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private com.example.ecommerce.repository.GuaranteeFileRepository guaranteeFileRepository;
+
     private Customer sampleCustomer;
     private static final String TEST_USERNAME = "maker_test";
 
     @BeforeEach
     void setUp() {
+        guaranteeFileRepository.deleteAll();
         processingHistoryRepository.deleteAll();
         guaranteeRequestRepository.deleteAll();
 
@@ -591,5 +595,98 @@ public class GuaranteeControllerTest {
                 .andExpect(jsonPath("$.data.PENDING_APPROVAL", is(0)))
                 .andExpect(jsonPath("$.data.APPROVED", is(0)))
                 .andExpect(jsonPath("$.data.REJECTED", is(0)));
+    }
+
+    @Test
+    @DisplayName("Cập nhật bảo lãnh - Đồng bộ danh sách file khi thêm/bớt hoặc xóa hết publicIds")
+    void updateGuarantee_SyncFiles_Success() throws Exception {
+        // Prepare 2 files in database
+        com.example.ecommerce.entity.GuaranteeFile file1 = guaranteeFileRepository.save(com.example.ecommerce.entity.GuaranteeFile.builder()
+                .fileName("file1.pdf")
+                .fileUrl("http://cloudinary.com/file1.pdf")
+                .publicId("pub_001")
+                .build());
+
+        com.example.ecommerce.entity.GuaranteeFile file2 = guaranteeFileRepository.save(com.example.ecommerce.entity.GuaranteeFile.builder()
+                .fileName("file2.pdf")
+                .fileUrl("http://cloudinary.com/file2.pdf")
+                .publicId("pub_002")
+                .build());
+
+        // Create guarantee with 2 files
+        GuaranteeCreationRequest createReq = GuaranteeCreationRequest.builder()
+                .customerCif("0012345678")
+                .customerName("Công ty ABC")
+                .taxCode("0101234567")
+                .guaranteeType(GuaranteeType.OTHER)
+                .guaranteeAmount(new BigDecimal("1000000"))
+                .currency(Currency.VND)
+                .effectiveDate(LocalDate.now())
+                .expiryDate(LocalDate.now().plusDays(30))
+                .purpose("Bảo lãnh test file")
+                .beneficiaryName("Ban quản lý ABC")
+                .contactEmail("contact@gmail.com")
+                .phoneNumber("0912345678")
+                .publicIds(java.util.List.of("pub_001", "pub_002"))
+                .build();
+
+        String responseJson = mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.data.files", hasSize(2)))
+                .andReturn().getResponse().getContentAsString();
+
+        String guaranteeId = objectMapper.readTree(responseJson).get("data").get("id").asText();
+
+        // Update guarantee by removing pub_002 (keeping only pub_001)
+        GuaranteeUpdateRequest updateReq1 = GuaranteeUpdateRequest.builder()
+                .customerCif("0012345678")
+                .customerName("Công ty ABC")
+                .taxCode("0101234567")
+                .guaranteeType(GuaranteeType.OTHER)
+                .guaranteeAmount(new BigDecimal("1000000"))
+                .currency(Currency.VND)
+                .effectiveDate(LocalDate.now())
+                .expiryDate(LocalDate.now().plusDays(30))
+                .purpose("Bảo lãnh test file - bớt 1 file")
+                .beneficiaryName("Ban quản lý ABC")
+                .contactEmail("contact@gmail.com")
+                .phoneNumber("0912345678")
+                .publicIds(java.util.List.of("pub_001"))
+                .build();
+
+        mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.files", hasSize(1)))
+                .andExpect(jsonPath("$.data.files[0].publicId", is("pub_001")));
+
+        // Update guarantee by sending empty publicIds list (removing all files)
+        GuaranteeUpdateRequest updateReq2 = GuaranteeUpdateRequest.builder()
+                .customerCif("0012345678")
+                .customerName("Công ty ABC")
+                .taxCode("0101234567")
+                .guaranteeType(GuaranteeType.OTHER)
+                .guaranteeAmount(new BigDecimal("1000000"))
+                .currency(Currency.VND)
+                .effectiveDate(LocalDate.now())
+                .expiryDate(LocalDate.now().plusDays(30))
+                .purpose("Bảo lãnh test file - xóa hết file")
+                .beneficiaryName("Ban quản lý ABC")
+                .contactEmail("contact@gmail.com")
+                .phoneNumber("0912345678")
+                .publicIds(java.util.Collections.emptyList())
+                .build();
+
+        mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq2)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.files", hasSize(0)));
     }
 }

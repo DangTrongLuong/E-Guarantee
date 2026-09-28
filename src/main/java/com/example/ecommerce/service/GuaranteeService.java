@@ -123,8 +123,8 @@ public class GuaranteeService {
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(existing);
 
-        if (request.getPublicIds() != null && !request.getPublicIds().isEmpty()) {
-            attachFilesToGuarantee(saved.getId(), request.getPublicIds());
+        if (request.getPublicIds() != null) {
+            syncGuaranteeFiles(saved.getId(), request.getPublicIds());
         }
 
         createHistory(saved, Action.UPDATE, currentUser, null);
@@ -167,13 +167,37 @@ public class GuaranteeService {
     }
 
     private void attachFilesToGuarantee(String guaranteeId, List<String> publicIds) {
-        for (String publicId : publicIds) {
-            if (publicId != null && !publicId.isBlank()) {
-                guaranteeFileRepository.findByPublicId(publicId.trim()).ifPresent(file -> {
+        syncGuaranteeFiles(guaranteeId, publicIds);
+    }
+
+    private void syncGuaranteeFiles(String guaranteeId, List<String> publicIds) {
+        if (publicIds == null) {
+            return;
+        }
+
+        List<GuaranteeFile> currentFiles = guaranteeFileRepository.findByGuaranteeId(guaranteeId);
+
+        List<String> targetPublicIds = publicIds.stream()
+                .filter(id -> id != null && !id.isBlank())
+                .map(String::trim)
+                .toList();
+
+        // 1. Gỡ gán các file không còn nằm trong danh sách publicIds mới
+        for (GuaranteeFile file : currentFiles) {
+            if (!targetPublicIds.contains(file.getPublicId())) {
+                file.setGuaranteeId(null);
+                guaranteeFileRepository.save(file);
+            }
+        }
+
+        // 2. Gán guaranteeId cho các file thuộc danh sách publicIds mới
+        for (String publicId : targetPublicIds) {
+            guaranteeFileRepository.findByPublicId(publicId).ifPresent(file -> {
+                if (!guaranteeId.equals(file.getGuaranteeId())) {
                     file.setGuaranteeId(guaranteeId);
                     guaranteeFileRepository.save(file);
-                });
-            }
+                }
+            });
         }
     }
 
@@ -286,6 +310,12 @@ public class GuaranteeService {
 
         if (existing.getStatus() != GuaranteeStatus.DRAFT) {
             throw new BadRequestException("Chỉ được xóa hồ sơ ở trạng thái Bản nháp (DRAFT)");
+        }
+
+        List<GuaranteeFile> files = guaranteeFileRepository.findByGuaranteeId(id);
+        for (GuaranteeFile file : files) {
+            file.setGuaranteeId(null);
+            guaranteeFileRepository.save(file);
         }
 
         processingHistoryRepository.deleteByGuaranteeRequest_Id(id);
