@@ -133,6 +133,12 @@ public class GuaranteeRequest implements Serializable, DateRangeAware, TenderNum
     @Builder.Default
     private GuaranteeStatus status = GuaranteeStatus.DRAFT;
 
+    @NotNull
+    @Enumerated(EnumType.STRING)
+    @Column(name = "signature_status", length = 20, nullable = false)
+    @Builder.Default
+    private com.example.ecommerce.enums.SignatureStatus signatureStatus = com.example.ecommerce.enums.SignatureStatus.UNSIGNED;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = true)
     @JoinColumn(name = "created_by", referencedColumnName = "username", nullable = true, updatable = false)
     private User createdBy;
@@ -164,6 +170,9 @@ public class GuaranteeRequest implements Serializable, DateRangeAware, TenderNum
         }
         if (this.status == null) {
             this.status = GuaranteeStatus.DRAFT;
+        }
+        if (this.signatureStatus == null) {
+            this.signatureStatus = com.example.ecommerce.enums.SignatureStatus.UNSIGNED;
         }
     }
 }

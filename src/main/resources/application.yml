@@ -32,7 +32,7 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
+#      password: ${REDIS_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8080}
@@ -44,4 +44,11 @@ cloudinary:
 
 
 secretkey: ${SECRET_KEY}
+
+signing:
+  keystore:
+    location: ${SIGNING_KEYSTORE_LOCATION:classpath:keystore.p12}
+    password: ${SIGNING_KEYSTORE_PASSWORD}
+    alias: ${SIGNING_KEYSTORE_ALIAS:eguarantee}
+  converter-url: ${SIGNING_CONVERTER_URL:http://localhost:8090}
 

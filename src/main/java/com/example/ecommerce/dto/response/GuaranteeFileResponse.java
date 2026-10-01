@@ -20,6 +20,11 @@ public class GuaranteeFileResponse {
     private Long fileSize;
     private String format;
     private String resourceType;
+    private Long sourceFileId;
+    private com.example.ecommerce.enums.FileArtifactType artifactType;
+    private String sha256;
+    private String preparedBy;
+    private LocalDateTime preparedAt;
     private Boolean isDigitallySigned;
     private LocalDateTime createdAt;
 }

@@ -51,6 +51,23 @@ public class GuaranteeFile implements Serializable {
     @Column(name = "resource_type", length = 50)
     private String resourceType;
 
+    @Column(name = "source_file_id")
+    private Long sourceFileId;
+
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    @Column(name = "artifact_type", nullable = false, length = 20)
+    @Builder.Default
+    private com.example.ecommerce.enums.FileArtifactType artifactType = com.example.ecommerce.enums.FileArtifactType.ORIGINAL;
+
+    @Column(name = "sha256", length = 64)
+    private String sha256;
+
+    @Column(name = "prepared_by", length = 255)
+    private String preparedBy;
+
+    @Column(name = "prepared_at")
+    private LocalDateTime preparedAt;
+
     @Column(name = "is_digitally_signed", nullable = false)
     @Builder.Default
     private Boolean isDigitallySigned = false;

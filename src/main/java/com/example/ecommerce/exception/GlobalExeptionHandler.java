@@ -19,6 +19,10 @@ import java.util.List;
 @Slf4j
 @RestControllerAdvice
 public class GlobalExeptionHandler {
+    @ExceptionHandler(SigningBusyException.class)
+    public ResponseEntity<ApiResponse<Object>> handleSigningBusy(SigningBusyException ex) {
+        return build(HttpStatus.SERVICE_UNAVAILABLE, "SIGNING_BUSY", ex.getMessage());
+    }
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ApiResponse<Object>> handleNotFound(ResourceNotFoundException ex) {
         log.warn("Không tìm thấy tài nguyên: {}", ex.getMessage());

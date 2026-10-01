@@ -15,4 +15,5 @@ public interface GuaranteeFileRepository extends JpaRepository<GuaranteeFile, Lo
     Optional<GuaranteeFile> findByPublicId(String publicId);
 
     void deleteByPublicId(String publicId);
+    boolean existsBySourceFileId(Long sourceFileId);
 }
