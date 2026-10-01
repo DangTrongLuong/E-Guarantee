@@ -1,0 +1,384 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" 
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+              xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" 
+              name="ChiTietYeuCauBaoLanh" 
+              pageWidth="595" 
+              pageHeight="842" 
+              columnWidth="555" 
+              leftMargin="20" 
+              rightMargin="20" 
+              topMargin="20" 
+              bottomMargin="20">
+
+    <!-- KHAI BÁO CÁC PARAMETERS TƯƠNG ỨNG VỚI GUARANTEE RESPONSE BACKEND -->
+    <parameter name="ID" class="java.lang.String">
+        <defaultValueExpression><![CDATA["GR-2026-000053"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="STATUS" class="java.lang.String">
+        <defaultValueExpression><![CDATA["Bản nháp"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="CUSTOMER_NAME" class="java.lang.String">
+        <defaultValueExpression><![CDATA["SOMA"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="CUSTOMER_CIF" class="java.lang.String">
+        <defaultValueExpression><![CDATA["0123456789"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="TAX_CODE" class="java.lang.String">
+        <defaultValueExpression><![CDATA["soma@gmail.com"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="CUSTOMER_ADDRESS" class="java.lang.String">
+        <defaultValueExpression><![CDATA["Hà Nội"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="GUARANTEE_TYPE" class="java.lang.String">
+        <defaultValueExpression><![CDATA["Bảo lãnh dự thầu"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="GUARANTEE_AMOUNT" class="java.lang.String">
+        <defaultValueExpression><![CDATA["1.121.212.111 VND"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="EFFECTIVE_DATE" class="java.lang.String">
+        <defaultValueExpression><![CDATA["2026-09-23"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="EXPIRY_DATE" class="java.lang.String">
+        <defaultValueExpression><![CDATA["2026-09-24"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="GUARANTEE_DAYS" class="java.lang.String">
+        <defaultValueExpression><![CDATA["1 ngày"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="TENDER_NUMBER" class="java.lang.String">
+        <defaultValueExpression><![CDATA["BR-22"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="RELATED_CONTRACT_NUMBER" class="java.lang.String">
+        <defaultValueExpression><![CDATA["hd-11"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="REFERENCE_NUMBER" class="java.lang.String">
+        <defaultValueExpression><![CDATA["001-11"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="BENEFICIARY_NAME" class="java.lang.String">
+        <defaultValueExpression><![CDATA["Tran Tuan Minh"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="BENEFICIARY_ADDRESS" class="java.lang.String">
+        <defaultValueExpression><![CDATA["Thai Binh"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="CONTACT_EMAIL" class="java.lang.String">
+        <defaultValueExpression><![CDATA["minh@gmail.com"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="PHONE_NUMBER" class="java.lang.String">
+        <defaultValueExpression><![CDATA["0932873743"]]></defaultValueExpression>
+    </parameter>
+    <parameter name="PURPOSE" class="java.lang.String">
+        <defaultValueExpression><![CDATA["tét"]]></defaultValueExpression>
+    </parameter>
+
+    <title>
+        <band height="800" splitType="Stretch">
+            <!-- HEADER TIÊU ĐỀ HỒ SƠ -->
+            <staticText>
+                <reportElement x="0" y="0" width="555" height="30" forecolor="#0F172A"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="18" isBold="true"/>
+                </textElement>
+                <text><![CDATA[Chi tiết yêu cầu bảo lãnh]]></text>
+            </staticText>
+
+            <textField>
+                <reportElement x="0" y="32" width="130" height="20" forecolor="#334155"/>
+                <textElement verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="11" isBold="true"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{ID}]]></textFieldExpression>
+            </textField>
+
+            <textField>
+                <reportElement x="135" y="32" width="80" height="20" forecolor="#475569"/>
+                <textElement textAlignment="Center" verticalAlignment="Middle">
+                    <font fontName="SansSerif" size="9" isBold="false"/>
+                </textElement>
+                <textFieldExpression><![CDATA[$P{STATUS}]]></textFieldExpression>
+            </textField>
+
+            <!-- 1. THÔNG TIN KHÁCH HÀNG -->
+            <frame>
+                <reportElement x="0" y="65" width="555" height="125"/>
+                <box>
+                    <topPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <leftPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <rightPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </box>
+
+                <!-- Tile Bar -->
+                <staticText>
+                    <reportElement mode="Opaque" x="0" y="0" width="555" height="30" backcolor="#F8FAFC" forecolor="#0F172A"/>
+                    <box leftPadding="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[Thông tin khách hàng]]></text>
+                </staticText>
+
+                <staticText>
+                    <reportElement x="15" y="38" width="120" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Khách hàng:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="140" y="38" width="400" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$P{CUSTOMER_NAME}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="58" width="120" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Mã CIF:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="140" y="58" width="400" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{CUSTOMER_CIF}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="78" width="120" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Mã số thuế:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="140" y="78" width="400" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{TAX_CODE}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="98" width="120" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Địa chỉ:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="140" y="98" width="400" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{CUSTOMER_ADDRESS}]]></textFieldExpression>
+                </textField>
+            </frame>
+
+            <!-- 2. THÔNG TIN BẢO LÃNH -->
+            <frame>
+                <reportElement x="0" y="200" width="555" height="200"/>
+                <box>
+                    <topPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <leftPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <rightPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </box>
+
+                <staticText>
+                    <reportElement mode="Opaque" x="0" y="0" width="555" height="30" backcolor="#F8FAFC" forecolor="#0F172A"/>
+                    <box leftPadding="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[Thông tin bảo lãnh]]></text>
+                </staticText>
+
+                <staticText>
+                    <reportElement x="15" y="38" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Loại bảo lãnh:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="38" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{GUARANTEE_TYPE}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="58" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Số tiền bảo lãnh:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="58" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10" isBold="true"/></textElement>
+                    <textFieldExpression><![CDATA[$P{GUARANTEE_AMOUNT}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="78" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Ngày hiệu lực:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="78" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{EFFECTIVE_DATE}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="98" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Ngày hết hạn:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="98" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{EXPIRY_DATE}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="118" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Thời hạn hiệu lực:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="118" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{GUARANTEE_DAYS}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="138" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Số hiệu gói thầu:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="138" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{TENDER_NUMBER}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="158" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Số hợp đồng liên quan:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="158" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{RELATED_CONTRACT_NUMBER}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="178" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Số tham chiếu:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="178" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{REFERENCE_NUMBER}]]></textFieldExpression>
+                </textField>
+            </frame>
+
+            <!-- 3. THÔNG TIN BÊN THỤ HƯỞNG -->
+            <frame>
+                <reportElement x="0" y="410" width="555" height="85"/>
+                <box>
+                    <topPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <leftPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <rightPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </box>
+
+                <staticText>
+                    <reportElement mode="Opaque" x="0" y="0" width="555" height="30" backcolor="#F8FAFC" forecolor="#0F172A"/>
+                    <box leftPadding="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[Thông tin bên thụ hưởng]]></text>
+                </staticText>
+
+                <staticText>
+                    <reportElement x="15" y="38" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Bên thụ hưởng:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="38" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{BENEFICIARY_NAME}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="58" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Địa chỉ:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="58" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{BENEFICIARY_ADDRESS}]]></textFieldExpression>
+                </textField>
+            </frame>
+
+            <!-- 4. THÔNG TIN LIÊN HỆ -->
+            <frame>
+                <reportElement x="0" y="505" width="555" height="85"/>
+                <box>
+                    <topPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <leftPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <rightPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </box>
+
+                <staticText>
+                    <reportElement mode="Opaque" x="0" y="0" width="555" height="30" backcolor="#F8FAFC" forecolor="#0F172A"/>
+                    <box leftPadding="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[Thông tin liên hệ bên thụ hưởng]]></text>
+                </staticText>
+
+                <staticText>
+                    <reportElement x="15" y="38" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Email liên hệ:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="38" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{CONTACT_EMAIL}]]></textFieldExpression>
+                </textField>
+
+                <staticText>
+                    <reportElement x="15" y="58" width="140" height="18" forecolor="#64748B"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <text><![CDATA[Số điện thoại:]]></text>
+                </staticText>
+                <textField>
+                    <reportElement x="160" y="58" width="380" height="18" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Middle"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{PHONE_NUMBER}]]></textFieldExpression>
+                </textField>
+            </frame>
+
+            <!-- 5. MỤC ĐÍCH BẢO LÃNH -->
+            <frame>
+                <reportElement x="0" y="600" width="555" height="75"/>
+                <box>
+                    <topPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <leftPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <bottomPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                    <rightPen lineWidth="0.5" lineColor="#E2E8F0"/>
+                </box>
+
+                <staticText>
+                    <reportElement mode="Opaque" x="0" y="0" width="555" height="30" backcolor="#F8FAFC" forecolor="#0F172A"/>
+                    <box leftPadding="12"/>
+                    <textElement verticalAlignment="Middle">
+                        <font fontName="SansSerif" size="11" isBold="true"/>
+                    </textElement>
+                    <text><![CDATA[Mục đích bảo lãnh]]></text>
+                </staticText>
+
+                <textField>
+                    <reportElement x="15" y="38" width="525" height="30" forecolor="#0F172A"/>
+                    <textElement verticalAlignment="Top"><font fontName="SansSerif" size="10"/></textElement>
+                    <textFieldExpression><![CDATA[$P{PURPOSE}]]></textFieldExpression>
+                </textField>
+            </frame>
+        </band>
+    </title>
+</jasperReport>

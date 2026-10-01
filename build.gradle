@@ -87,6 +87,9 @@ dependencies {
 
 	// Cloudinary
 	implementation 'com.cloudinary:cloudinary-http44:1.39.0'
+
+	// JasperReports for PDF generation
+	implementation 'net.sf.jasperreports:jasperreports:6.21.3'
 }
 
 tasks.named('test') {
