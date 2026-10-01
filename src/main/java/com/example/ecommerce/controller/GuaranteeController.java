@@ -6,6 +6,7 @@ import com.example.ecommerce.dto.response.ApiResponse;
 import com.example.ecommerce.dto.response.GuaranteeResponse;
 import com.example.ecommerce.dto.response.GuaranteeSummaryResponse;
 import com.example.ecommerce.service.GuaranteeService;
+import com.example.ecommerce.service.JasperReportService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,7 +14,10 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import com.example.ecommerce.dto.request.RejectGuaranteeRequest;
@@ -34,6 +38,7 @@ import java.util.Map;
 public class GuaranteeController {
 
     GuaranteeService guaranteeService;
+    JasperReportService jasperReportService;
 
     @PostMapping
     @Operation(
@@ -213,6 +218,47 @@ public class GuaranteeController {
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Xóa yêu cầu bảo lãnh thành công", null));
+    }
+
+    @GetMapping("/{id}/export-pdf")
+    @Operation(
+            summary = "Xuất file PDF báo cáo bảo lãnh từ mẫu Jasper",
+            description = "Tự động lấy thông tin hồ sơ bảo lãnh theo ID và sinh file PDF từ mẫu DetalGuarantee.jrxml"
+    )
+    public ResponseEntity<byte[]> exportGuaranteePdf(@PathVariable String id) {
+        log.info("Nhận yêu cầu xuất PDF báo cáo bảo lãnh cho mã {}", id);
+        GuaranteeResponse detail = guaranteeService.getDetail(id);
+        byte[] pdfBytes = jasperReportService.generateGuaranteePdf(detail);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.inline()
+                .filename("Guarantee_Detail_" + id + ".pdf")
+                .build());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
+    }
+
+    @PostMapping("/export-pdf")
+    @Operation(
+            summary = "Xuất file PDF báo cáo bảo lãnh với tham số tùy chỉnh",
+            description = "Nhận các tham số tùy chỉnh trong Body (JSON) và sinh file PDF từ mẫu DetalGuarantee.jrxml"
+    )
+    public ResponseEntity<byte[]> exportGuaranteePdfFromCustomParams(@RequestBody Map<String, Object> params) {
+        log.info("Nhận yêu cầu xuất PDF báo cáo bảo lãnh với tham số tùy chỉnh: {}", params);
+        byte[] pdfBytes = jasperReportService.generatePdfFromCustomParams(params);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDisposition(ContentDisposition.inline()
+                .filename("Guarantee_Detail_Report.pdf")
+                .build());
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfBytes);
     }
 }
 

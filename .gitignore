@@ -4,8 +4,7 @@ build/
 !gradle/wrapper/gradle-wrapper.jar
 !**/src/main/**/build/
 !**/src/test/**/build/
-build.gradle
-docs/
+
 ### IntelliJ IDEA ###
 .idea
 *.iws
@@ -35,3 +34,8 @@ bin/
 
 ### Local env ###
 .env
+*.md
+
+*.docx
+
+
