@@ -18,22 +18,22 @@ public class RedisConfiguration {
     @Value("${spring.data.redis.password:}")
     private String password;
 
-    // @Bean
-    // public LettuceConnectionFactory redisConnectionFactory() {
-    // RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host,
-    // port);
-    // if (password != null && !password.isBlank()) {
-    // config.setPassword(RedisPassword.of(password));
-    // }
-    // return new LettuceConnectionFactory(config);
-    // }
+//    @Bean
+//    public LettuceConnectionFactory redisConnectionFactory() {
+//        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host,
+//                port);
+//        if (password != null && !password.isBlank()) {
+//            config.setPassword(RedisPassword.of(password));
+//        }
+//        return new LettuceConnectionFactory(config);
+//    }
 
-    @Bean
-    public LettuceConnectionFactory redisConnectionFactory() {
+     @Bean
+     public LettuceConnectionFactory redisConnectionFactory() {
 
-        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host,
-                port));
-    }
+     return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host,
+     port));
+     }
 
 
 }

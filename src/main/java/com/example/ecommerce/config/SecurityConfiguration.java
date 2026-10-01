@@ -52,6 +52,7 @@ public class SecurityConfiguration {
                         .requestMatchers("/api/v1/auth/logout").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/auth/users").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers("/api/v1/customers").hasAnyRole("MARKER", "CHECKER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/export-pdf").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees").hasRole("MARKER")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/guarantees/**").hasRole("MARKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/submit").hasRole("MARKER")
