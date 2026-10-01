@@ -85,9 +85,6 @@ dependencies {
 	// --- #20 Swagger / OpenAPI ---
 	 implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.17'
 
-	// Redis
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
-
 	implementation 'com.cloudinary:cloudinary-http44:1.39.0'
 
 	implementation 'org.apache.pdfbox:pdfbox:3.0.3'

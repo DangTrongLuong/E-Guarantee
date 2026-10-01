@@ -125,8 +125,8 @@ public class GuaranteeService {
 
         GuaranteeRequest saved = guaranteeRequestRepository.save(existing);
 
-        if (request.getPublicIds() != null && !request.getPublicIds().isEmpty()) {
-            attachFilesToGuarantee(saved.getId(), request.getPublicIds());
+        if (request.getPublicIds() != null) {
+            syncGuaranteeFiles(saved.getId(), request.getPublicIds());
         }
 
         createHistory(saved, Action.UPDATE, currentUser, null);
@@ -158,15 +158,39 @@ public class GuaranteeService {
     }
 
     private void attachFilesToGuarantee(String guaranteeId, List<String> publicIds) {
-        for (String publicId : publicIds) {
-            if (publicId != null && !publicId.isBlank()) {
-                guaranteeFileRepository.findByPublicId(publicId.trim()).ifPresent(file -> {
-                    if (file.getArtifactType() != com.example.ecommerce.enums.FileArtifactType.ORIGINAL
-                            || (file.getGuaranteeId() != null && !file.getGuaranteeId().equals(guaranteeId)))
-                        throw new BadRequestException("Chỉ gắn bản gốc; không chuyển file giữa các hồ sơ");
-                    file.setGuaranteeId(guaranteeId);
-                    guaranteeFileRepository.save(file);
-                });
+        syncGuaranteeFiles(guaranteeId, publicIds);
+    }
+
+    private void syncGuaranteeFiles(String guaranteeId, List<String> publicIds) {
+        if (publicIds == null) return;
+        List<String> targets = publicIds.stream()
+                .filter(id -> id != null && !id.isBlank())
+                .map(String::trim).distinct().toList();
+        List<GuaranteeFile> targetFiles = new ArrayList<>();
+        for (String publicId : targets) {
+            GuaranteeFile file = guaranteeFileRepository.findByPublicId(publicId)
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy file: " + publicId));
+            if (file.getArtifactType() != com.example.ecommerce.enums.FileArtifactType.ORIGINAL
+                    || (file.getGuaranteeId() != null && !guaranteeId.equals(file.getGuaranteeId()))) {
+                throw new BadRequestException("Chỉ gắn bản gốc; không chuyển file giữa các hồ sơ");
+            }
+            targetFiles.add(file);
+        }
+        List<GuaranteeFile> currentFiles = guaranteeFileRepository.findByGuaranteeId(guaranteeId);
+        for (GuaranteeFile file : currentFiles) {
+            if (file.getArtifactType() == com.example.ecommerce.enums.FileArtifactType.ORIGINAL
+                    && !targets.contains(file.getPublicId())) {
+                if (guaranteeFileRepository.existsBySourceFileId(file.getId())) {
+                    throw new BadRequestException("Không gỡ bản nguồn đang có bản chuyển đổi hoặc bản ký");
+                }
+                file.setGuaranteeId(null);
+                guaranteeFileRepository.save(file);
+            }
+        }
+        for (GuaranteeFile file : targetFiles) {
+            if (!guaranteeId.equals(file.getGuaranteeId())) {
+                file.setGuaranteeId(guaranteeId);
+                guaranteeFileRepository.save(file);
             }
         }
     }
@@ -293,6 +317,12 @@ public class GuaranteeService {
 
         if (existing.getStatus() != GuaranteeStatus.DRAFT) {
             throw new BadRequestException("Chỉ được xóa hồ sơ ở trạng thái Bản nháp (DRAFT)");
+        }
+
+        List<GuaranteeFile> files = guaranteeFileRepository.findByGuaranteeId(id);
+        for (GuaranteeFile file : files) {
+            file.setGuaranteeId(null);
+            guaranteeFileRepository.save(file);
         }
 
         processingHistoryRepository.deleteByGuaranteeRequest_Id(id);

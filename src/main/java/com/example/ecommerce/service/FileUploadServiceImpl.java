@@ -231,6 +231,7 @@ public class FileUploadServiceImpl implements FileUploadService {
             Map<String, Object> options = ObjectUtils.asMap(
                     "public_id", uniquePublicId,
                     "resource_type", "raw",
+                    "access_mode", "public",
                     "overwrite", false,
                     "chunk_size", 20 * 1024 * 1024);
 
