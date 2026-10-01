@@ -69,16 +69,32 @@ public class GuaranteeController {
     @GetMapping
     @Operation(
             summary = "Lấy danh sách yêu cầu bảo lãnh",
-            description = "Hỗ trợ lọc theo mã yêu cầu, tên khách hàng, CIF, mã số thuế, trạng thái, loại bảo lãnh, khoảng ngày tạo; hỗ trợ phân trang và sắp xếp (id, createdDate, guaranteeAmount, status, guaranteeType)"
+            description = "Hỗ trợ lọc theo mã yêu cầu, tên khách hàng, CIF, mã số thuế, trạng thái, loại bảo lãnh, khoảng ngày tạo; hỗ trợ phân trang và sắp xếp nhiều trường (sortBy=field,direction lặp nhiều lần)"
     )
     public ResponseEntity<ApiResponse<PageResponse<GuaranteeSummaryResponse>>> getGuarantees(
-            @RequestParam(required = false) Map<String, Object> params
+            @RequestParam(required = false) Map<String, Object> params,
+            @RequestParam(name = "sortBy", required = false) List<String> sortByParams
     ) {
-        log.info("Nhận yêu cầu lấy danh sách yêu cầu bảo lãnh với params: {}", params);
-        PageResponse<GuaranteeSummaryResponse> response = guaranteeService.getGuarantees(params);
+        log.info("Nhận yêu cầu lấy danh sách yêu cầu bảo lãnh với params: {}, sortBy: {}", params, sortByParams);
+        PageResponse<GuaranteeSummaryResponse> response = guaranteeService.getGuarantees(params, sortByParams);
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Lấy danh sách yêu cầu bảo lãnh thành công", response));
+    }
+
+    @GetMapping(value = {"/status-counts", "/status-count", "/counts"})
+    @Operation(
+            summary = "Lấy số lượng yêu cầu bảo lãnh theo từng trạng thái",
+            description = "Trả về tổng số lượng bản ghi (ALL) và số lượng theo từng trạng thái (DRAFT, PENDING_APPROVAL, APPROVED, REJECTED). Hỗ trợ các tham số lọc tìm kiếm (từ khóa, mã khách hàng, ngày tạo, loại bảo lãnh, ...)"
+    )
+    public ResponseEntity<ApiResponse<Map<String, Long>>> getGuaranteeStatusCounts(
+            @RequestParam(required = false) Map<String, Object> params
+    ) {
+        log.info("Nhận yêu cầu lấy số lượng yêu cầu bảo lãnh theo trạng thái với params: {}", params);
+        Map<String, Long> response = guaranteeService.getGuaranteeStatusCounts(params);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Lấy số lượng yêu cầu bảo lãnh theo trạng thái thành công", response));
     }
 
     @GetMapping("/{id}")
@@ -141,6 +157,33 @@ public class GuaranteeController {
                 .body(ApiResponse.success("Phê duyệt yêu cầu bảo lãnh thành công", response));
     }
 
+    @PostMapping("/{id}/sign")
+    @Operation(
+            summary = "Ký số yêu cầu bảo lãnh",
+            description = "CHECKER ký PDF/DOCX/XLSX/XML; DOC/XLS phải gọi prepare, xem file rồi gửi preparedPublicId và preparedSha256. Chỉ ghi SIGNED sau khi xác thực chữ ký và lưu bản ký riêng. Hàng đợi đầy trả 503."
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> sign(
+            @PathVariable String id,
+            @RequestParam String publicId,
+            @RequestParam(required = false) String preparedPublicId,
+            @RequestParam(required = false) String preparedSha256
+    ) {
+        GuaranteeResponse response = guaranteeService.signGuarantee(id, publicId, preparedPublicId, preparedSha256);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Chuyển trạng thái chờ ký số thành công", response));
+    }
+
+    @PostMapping("/{id}/sign/prepare")
+    @Operation(summary = "Chuẩn bị DOC/XLS để xem lại trước khi ký",
+            description = "CHECKER chuyển DOC thành DOCX, XLS thành XLSX. Xem file trả về và xác nhận publicId/hash khi ký; bản chuẩn bị hết hạn sau 24 giờ.")
+    public ResponseEntity<ApiResponse<com.example.ecommerce.dto.response.GuaranteeFileResponse>> prepareSigning(
+            @PathVariable String id, @RequestParam String publicId) {
+        return ResponseEntity.ok(ApiResponse.success("Bản chuẩn bị cần được xem lại trước khi xác nhận ký",
+                guaranteeService.prepareSigning(id, publicId)));
+    }
+
     @PostMapping("/{id}/reject")
     @Operation(
             summary = "Từ chối yêu cầu bảo lãnh",
@@ -156,4 +199,20 @@ public class GuaranteeController {
                 .status(HttpStatus.OK)
                 .body(ApiResponse.success("Từ chối yêu cầu bảo lãnh thành công", response));
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Xóa yêu cầu bảo lãnh (Bản nháp - DRAFT)",
+            description = "Chỉ cho phép xóa bản ghi ở trạng thái DRAFT"
+    )
+    public ResponseEntity<ApiResponse<Void>> deleteGuarantee(
+            @PathVariable String id
+    ) {
+        log.info("Nhận yêu cầu xóa hồ sơ bảo lãnh {}", id);
+        guaranteeService.deleteGuarantee(id);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Xóa yêu cầu bảo lãnh thành công", null));
+    }
 }
+

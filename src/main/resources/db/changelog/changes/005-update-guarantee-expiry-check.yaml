@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 05-update-check-expiry-after-or-equal-effective
+      author: system
+      validCheckSum: 1:ANY
+      comment: Cập nhật ràng buộc CHECK chk_gr_expiry_after_effective thành expiry_date >= effective_date
+      preConditions:
+        - onFail: MARK_RAN
+        - dbms:
+            type: mysql,mariadb
+      changes:
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              DROP CONSTRAINT chk_gr_expiry_after_effective;
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              ADD CONSTRAINT chk_gr_expiry_after_effective
+              CHECK (expiry_date >= effective_date);
+      rollback:
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              DROP CONSTRAINT chk_gr_expiry_after_effective;
+        - sql:
+            sql: >
+              ALTER TABLE guarantee_requests
+              ADD CONSTRAINT chk_gr_expiry_after_effective
+              CHECK (expiry_date > effective_date);

@@ -23,6 +23,7 @@ public interface GuaranteeMapper {
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
+    @Mapping(target = "signatureStatus", ignore = true)
     GuaranteeRequest toEntity(GuaranteeCreationRequest request);
 
     @Mapping(target = "customerCif", source = "customer.cif")
@@ -34,6 +35,7 @@ public interface GuaranteeMapper {
     @Mapping(target = "updatedBy", source = "updatedBy.username")
     @Mapping(target = "updatedByFullName", source = "updatedBy.fullName")
     @Mapping(target = "guaranteeDays", ignore = true)
+    @Mapping(target = "files", ignore = true)
     GuaranteeResponse toResponse(GuaranteeRequest entity);
 
     @Mapping(target = "id", ignore = true)
@@ -43,6 +45,7 @@ public interface GuaranteeMapper {
     @Mapping(target = "createdDate", ignore = true)
     @Mapping(target = "updatedBy", ignore = true)
     @Mapping(target = "updatedDate", ignore = true)
+    @Mapping(target = "signatureStatus", ignore = true)
     void updateEntityFromRequest(
             GuaranteeUpdateRequest request,
             @MappingTarget GuaranteeRequest entity

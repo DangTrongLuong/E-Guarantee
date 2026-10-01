@@ -10,7 +10,6 @@ import com.example.ecommerce.validation.ValidTenderNumber;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
@@ -53,7 +52,6 @@ public class GuaranteeUpdateRequest implements DateRangeAware, TenderNumberAware
     private Currency currency;
 
     @NotNull(message = "Ngày hiệu lực không được để trống")
-    @FutureOrPresent(message = "Ngày hiệu lực không được là ngày trong quá khứ")
     private LocalDate effectiveDate;
 
     @NotNull(message = "Ngày hết hạn không được để trống")
@@ -81,9 +79,13 @@ public class GuaranteeUpdateRequest implements DateRangeAware, TenderNumberAware
 
     @NotBlank(message = "Email liên hệ không được để trống")
     @Email(message = "Email liên hệ không hợp lệ")
+    @Pattern(regexp = "^[a-zA-Z0-9._%+-]+@gmail\\.com$", message = "Email liên hệ phải có định dạng @gmail.com")
     @Size(max = 255, message = "Email liên hệ không được vượt quá 255 ký tự")
     private String contactEmail;
 
-    @Pattern(regexp = "^[0-9]{10}$", message = "Số điện thoại phải chứa đúng 10 chữ số")
+    @Pattern(regexp = "^0[0-9]{9,15}$", message = "Số điện thoại phải bắt đầu bằng số 0 và chứa từ 9 đến 15 chữ số")
+    @NotBlank(message = "Số điện thoại không được để trống !")
     private String phoneNumber;
+
+    private java.util.List<String> publicIds;
 }

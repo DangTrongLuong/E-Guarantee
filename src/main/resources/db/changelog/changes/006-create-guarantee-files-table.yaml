@@ -1,0 +1,108 @@
+databaseChangeLog:
+  - changeSet:
+      id: 06-create-table-guarantee-files
+      author: system
+      validCheckSum: ANY
+      comment: Tạo bảng guarantee_files lưu trữ thông tin file đính kèm với guarantee_requests
+      changes:
+        - createTable:
+            tableName: guarantee_files
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: pk_guarantee_files
+                    nullable: false
+              - column:
+                  name: guarantee_id
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: file_name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_url
+                  type: VARCHAR(1000)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: public_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_size
+                  type: BIGINT
+                  constraints:
+                    nullable: true
+              - column:
+                  name: format
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: resource_type
+                  type: VARCHAR(50)
+                  constraints:
+                    nullable: true
+              - column:
+                  name: is_digitally_signed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: DATETIME
+                  constraints:
+                    nullable: false
+      rollback:
+        - dropTable:
+            tableName: guarantee_files
+
+  - changeSet:
+      id: 06-fk-guarantee-files-guarantee-requests
+      author: system
+      validCheckSum: ANY
+      comment: FK guarantee_files.guarantee_id -> guarantee_requests.id
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: guarantee_files
+            baseColumnNames: guarantee_id
+            constraintName: fk_gf_guarantee_id
+            referencedTableName: guarantee_requests
+            referencedColumnNames: id
+            onDelete: CASCADE
+            onUpdate: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint:
+            baseTableName: guarantee_files
+            constraintName: fk_gf_guarantee_id
+
+  - changeSet:
+      id: 06-add-is-digitally-signed-column
+      author: system
+      comment: Bổ sung cột is_digitally_signed vào bảng guarantee_files
+      preConditions:
+        - onFail: MARK_RAN
+        - not:
+            - columnExists:
+                tableName: guarantee_files
+                columnName: is_digitally_signed
+      changes:
+        - addColumn:
+            tableName: guarantee_files
+            columns:
+              - column:
+                  name: is_digitally_signed
+                  type: BOOLEAN
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false
+

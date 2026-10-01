@@ -1,6 +1,12 @@
 spring:
   application:
     name: eguarantee
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 200MB
+      enabled: true
+
   config:
     import: optional:file:.env[.properties]
 
@@ -26,9 +32,23 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+#      password: ${REDIS_PASSWORD:}
 
 server:
   port: ${SERVER_PORT:8080}
 
+cloudinary:
+  cloud-name: ${CLOUD_NAME}
+  api-key: ${CLOUD_API_KEY}
+  api-secret: ${CLOUD_API_SECRET}
+
+
 secretkey: ${SECRET_KEY}
+
+signing:
+  keystore:
+    location: ${SIGNING_KEYSTORE_LOCATION:classpath:keystore.p12}
+    password: ${SIGNING_KEYSTORE_PASSWORD}
+    alias: ${SIGNING_KEYSTORE_ALIAS:eguarantee}
+  converter-url: ${SIGNING_CONVERTER_URL:http://localhost:8090}
 

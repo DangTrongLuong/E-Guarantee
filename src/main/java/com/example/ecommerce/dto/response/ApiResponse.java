@@ -20,7 +20,7 @@ public class ApiResponse<T> {
     private T data;
     private LocalDateTime timestamp;
 
-    public static <T> ApiResponse<T> success(String message, T data){
+    public static <T> ApiResponse<T> success(String message, T data) {
         return ApiResponse.<T>builder()
                 .success(true)
                 .message(message)
@@ -29,15 +29,15 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> success(T data){
+    public static <T> ApiResponse<T> success(T data) {
         return success("Success", data);
     }
 
-    public static <T> ApiResponse<T> error(String message){
+    public static <T> ApiResponse<T> error(String message) {
         return error("Error", message);
     }
 
-    public static <T> ApiResponse<T> error(String code, String message){
+    public static <T> ApiResponse<T> error(String code, String message) {
         return ApiResponse.<T>builder()
                 .success(false)
                 .code(code)
@@ -46,7 +46,7 @@ public class ApiResponse<T> {
                 .build();
     }
 
-    public static <T> ApiResponse<T> error(String code, String message, T data){
+    public static <T> ApiResponse<T> error(String code, String message, T data) {
         return ApiResponse.<T>builder()
                 .success(false)
                 .code(code)
@@ -56,4 +56,3 @@ public class ApiResponse<T> {
                 .build();
     }
 }
-

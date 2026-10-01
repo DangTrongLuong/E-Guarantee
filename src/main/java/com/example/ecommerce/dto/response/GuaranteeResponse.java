@@ -12,6 +12,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 
 @Data
 @Builder
@@ -38,12 +39,14 @@ public class GuaranteeResponse {
     private String contactEmail;
     private String phoneNumber;
     private GuaranteeStatus status;
+    private com.example.ecommerce.enums.SignatureStatus signatureStatus;
     private String createdBy;
     private String createdByFullName;
     private LocalDateTime createdDate;
     private String updatedBy;
     private String updatedByFullName;
     private LocalDateTime updatedDate;
+    private List<GuaranteeFileResponse> files;
 
     public Long getGuaranteeDays() {
         if (effectiveDate != null && expiryDate != null) {

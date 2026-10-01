@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 007-add-signature-status
+      author: antigravity
+      changes:
+        - addColumn:
+            tableName: guarantee_requests
+            columns:
+              - column:
+                  name: signature_status
+                  type: varchar(20)
+                  defaultValue: 'UNSIGNED'
+                  constraints:
+                    nullable: false

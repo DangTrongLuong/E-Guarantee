@@ -39,31 +39,64 @@ public class GuaranteeSpecification {
 
             List<Predicate> predicates = new ArrayList<>();
 
-            // 1. Mã yêu cầu (id / requestCode / code / maYeuCau)
+            // Join Customer table cho tên khách hàng và CIF
+            Join<GuaranteeRequest, Customer> customerJoin = null;
+
+            // Keyword search: Tìm kiếm chung trong requestCode, customerName, customerCif
+            String keyword = extractStringParam(params, "keyword", "search");
+            if (keyword != null && !keyword.isBlank()) {
+                String keywordLower = keyword.trim().toLowerCase();
+                List<Predicate> keywordPredicates = new ArrayList<>();
+                
+                // Tìm trong mã yêu cầu
+                keywordPredicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(root.get("id")),
+                        "%" + keywordLower + "%"
+                ));
+                
+                // Tìm trong tên khách hàng
+                if (customerJoin == null) {
+                    customerJoin = root.join("customer", JoinType.LEFT);
+                }
+                keywordPredicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(customerJoin.get("customerName")),
+                        "%" + keywordLower + "%"
+                ));
+                
+                // Tìm trong CIF
+                keywordPredicates.add(criteriaBuilder.like(
+                        criteriaBuilder.lower(customerJoin.get("cif")),
+                        "%" + keywordLower + "%"
+                ));
+                
+                // Kết hợp với OR: keyword phải match 1 trong 3 trường
+                predicates.add(criteriaBuilder.or(keywordPredicates.toArray(new Predicate[0])));
+            }
+
+            // 1. Mã yêu cầu - Tìm kiếm cụ thể (id / requestCode / code / maYeuCau)
             String requestCode = extractStringParam(params, "requestCode", "id", "code", "maYeuCau");
-            if (requestCode != null && !requestCode.isBlank()) {
+            if (requestCode != null && !requestCode.isBlank() && keyword == null) {
                 predicates.add(criteriaBuilder.like(
                         criteriaBuilder.lower(root.get("id")),
                         "%" + requestCode.trim().toLowerCase() + "%"
                 ));
             }
 
-            // Join Customer table cho tên khách hàng và CIF
-            Join<GuaranteeRequest, Customer> customerJoin = null;
-
-            // 2. Tên khách hàng (customerName / tenKhachHang)
+            // 2. Tên khách hàng - Tìm kiếm cụ thể (customerName / tenKhachHang)
             String customerName = extractStringParam(params, "customerName", "tenKhachHang", "customer_name");
-            if (customerName != null && !customerName.isBlank()) {
-                customerJoin = root.join("customer", JoinType.LEFT);
+            if (customerName != null && !customerName.isBlank() && keyword == null) {
+                if (customerJoin == null) {
+                    customerJoin = root.join("customer", JoinType.LEFT);
+                }
                 predicates.add(criteriaBuilder.like(
                         criteriaBuilder.lower(customerJoin.get("customerName")),
                         "%" + customerName.trim().toLowerCase() + "%"
                 ));
             }
 
-            // 3. Mã CIF (cif / customerCif)
+            // 3. Mã CIF - Tìm kiếm cụ thể (cif / customerCif)
             String cif = extractStringParam(params, "cif", "customerCif", "customer_cif");
-            if (cif != null && !cif.isBlank()) {
+            if (cif != null && !cif.isBlank() && keyword == null) {
                 if (customerJoin == null) {
                     customerJoin = root.join("customer", JoinType.LEFT);
                 }

@@ -13,10 +13,10 @@ public class ExpiryDateValidator implements ConstraintValidator<ValidExpiryDate,
         if (target == null || target.getEffectiveDate() == null || target.getExpiryDate() == null) {
             return true;
         }
-        boolean valid = target.getExpiryDate().isAfter(target.getEffectiveDate());
+        boolean valid = !target.getExpiryDate().isBefore(target.getEffectiveDate());
         if (!valid) {
             context.disableDefaultConstraintViolation();
-            context.buildConstraintViolationWithTemplate("Ngày hết hạn phải sau Ngày hiệu lực !")
+            context.buildConstraintViolationWithTemplate("Ngày hết hạn phải bằng hoặc sau Ngày hiệu lực !")
                     .addPropertyNode("expiryDate")
                     .addConstraintViolation();
         }
