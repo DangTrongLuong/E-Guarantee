@@ -224,6 +224,8 @@ public class FileUploadServiceImpl implements FileUploadService {
         Path tempFilePath = null;
         String uploadedPublicId = null;
         try {
+            // transferTo may move the servlet's temporary file, making it unreadable afterward.
+            String sha256 = DocumentValidator.sha256(file.getBytes());
             tempFilePath = Files.createTempFile("upload_", "_" + cleanBaseName + "." + extension);
             File tempFile = tempFilePath.toFile();
             file.transferTo(tempFile);
@@ -260,7 +262,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                     .format(format)
                     .resourceType(resourceType)
                     .isDigitallySigned(isDigitallySigned)
-                    .sha256(DocumentValidator.sha256(file.getBytes()))
+                    .sha256(sha256)
                     .build();
 
             GuaranteeFile savedFile = guaranteeFileRepository.save(guaranteeFile);
