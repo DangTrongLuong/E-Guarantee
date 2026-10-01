@@ -57,6 +57,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/submit").hasRole("MARKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/approve").hasRole("CHECKER")
                         .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/reject").hasRole("CHECKER")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/guarantees/*/sign", "/api/v1/guarantees/*/sign/prepare").hasRole("CHECKER")
                         .requestMatchers(HttpMethod.GET, "/api/v1/guarantees/**").hasAnyRole("MARKER", "CHECKER")
                         .requestMatchers("/api/v1/files/**").hasAnyRole("MARKER", "CHECKER")
                         .anyRequest().authenticated()

@@ -27,7 +27,8 @@ public class FileUploadController {
 
     private final FileUploadService fileUploadService;
 
-    @Operation(summary = "Upload 1 hoặc nhiều file bất đồng bộ đa luồng qua Server (Tối đa 100MB/file, tổng 200MB)")
+    @Operation(summary = "Upload PDF, DOC, DOCX, XLS, XLSX, XML (100MB/file, tổng 200MB)",
+            description = "Kiểm tra cấu trúc thật; không nhận file mã hóa, đã ký, có macro hoặc đối tượng nhúng. isDigitallySigned=true bị từ chối; chỉ server đặt cờ sau khi ký và xác thực.")
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<FileUploadBatchResponse>> uploadFiles(
             @RequestParam("files") List<MultipartFile> files,

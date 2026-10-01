@@ -19,6 +19,9 @@ public class FileUploadResponse {
     private String format;
     private Long fileSize;
     private String resourceType;
+    private Long sourceFileId;
+    private com.example.ecommerce.enums.FileArtifactType artifactType;
+    private String sha256;
     private Boolean isDigitallySigned;
     private LocalDateTime uploadedAt;
     private String status;

@@ -64,6 +64,8 @@ public class GuaranteeService {
     UserRepository userRepository;
     ProcessingHistoryRepository processingHistoryRepository;
     GuaranteeFileRepository guaranteeFileRepository;
+    FileUploadService fileUploadService;
+    SigningWorkflowService signingWorkflowService;
 
     @Transactional
     public GuaranteeResponse createGuarantee(GuaranteeCreationRequest request) {
@@ -152,18 +154,7 @@ public class GuaranteeService {
     }
 
     private GuaranteeFileResponse toFileResponse(GuaranteeFile file) {
-        return GuaranteeFileResponse.builder()
-                .id(file.getId())
-                .guaranteeId(file.getGuaranteeId())
-                .fileName(file.getFileName())
-                .fileUrl(file.getFileUrl())
-                .publicId(file.getPublicId())
-                .fileSize(file.getFileSize())
-                .format(file.getFormat())
-                .resourceType(file.getResourceType())
-                .isDigitallySigned(file.getIsDigitallySigned())
-                .createdAt(file.getCreatedAt())
-                .build();
+        return SigningWorkflowService.response(file);
     }
 
     private void attachFilesToGuarantee(String guaranteeId, List<String> publicIds) {
@@ -171,33 +162,36 @@ public class GuaranteeService {
     }
 
     private void syncGuaranteeFiles(String guaranteeId, List<String> publicIds) {
-        if (publicIds == null) {
-            return;
-        }
-
-        List<GuaranteeFile> currentFiles = guaranteeFileRepository.findByGuaranteeId(guaranteeId);
-
-        List<String> targetPublicIds = publicIds.stream()
+        if (publicIds == null) return;
+        List<String> targets = publicIds.stream()
                 .filter(id -> id != null && !id.isBlank())
-                .map(String::trim)
-                .toList();
-
-        // 1. Gỡ gán các file không còn nằm trong danh sách publicIds mới
+                .map(String::trim).distinct().toList();
+        List<GuaranteeFile> targetFiles = new ArrayList<>();
+        for (String publicId : targets) {
+            GuaranteeFile file = guaranteeFileRepository.findByPublicId(publicId)
+                    .orElseThrow(() -> new BadRequestException("Không tìm thấy file: " + publicId));
+            if (file.getArtifactType() != com.example.ecommerce.enums.FileArtifactType.ORIGINAL
+                    || (file.getGuaranteeId() != null && !guaranteeId.equals(file.getGuaranteeId()))) {
+                throw new BadRequestException("Chỉ gắn bản gốc; không chuyển file giữa các hồ sơ");
+            }
+            targetFiles.add(file);
+        }
+        List<GuaranteeFile> currentFiles = guaranteeFileRepository.findByGuaranteeId(guaranteeId);
         for (GuaranteeFile file : currentFiles) {
-            if (!targetPublicIds.contains(file.getPublicId())) {
+            if (file.getArtifactType() == com.example.ecommerce.enums.FileArtifactType.ORIGINAL
+                    && !targets.contains(file.getPublicId())) {
+                if (guaranteeFileRepository.existsBySourceFileId(file.getId())) {
+                    throw new BadRequestException("Không gỡ bản nguồn đang có bản chuyển đổi hoặc bản ký");
+                }
                 file.setGuaranteeId(null);
                 guaranteeFileRepository.save(file);
             }
         }
-
-        // 2. Gán guaranteeId cho các file thuộc danh sách publicIds mới
-        for (String publicId : targetPublicIds) {
-            guaranteeFileRepository.findByPublicId(publicId).ifPresent(file -> {
-                if (!guaranteeId.equals(file.getGuaranteeId())) {
-                    file.setGuaranteeId(guaranteeId);
-                    guaranteeFileRepository.save(file);
-                }
-            });
+        for (GuaranteeFile file : targetFiles) {
+            if (!guaranteeId.equals(file.getGuaranteeId())) {
+                file.setGuaranteeId(guaranteeId);
+                guaranteeFileRepository.save(file);
+            }
         }
     }
 
@@ -271,6 +265,19 @@ public class GuaranteeService {
         log.info("Phê duyệt thành công yêu cầu bảo lãnh {} bởi {}", saved.getId(), currentUser.getUsername());
 
         return enrichGuaranteeResponse(guaranteeMapper.toResponse(saved), saved.getId());
+    }
+
+    public GuaranteeResponse signGuarantee(String id, String publicId) {
+        return signGuarantee(id, publicId, null, null);
+    }
+
+    public GuaranteeResponse signGuarantee(String id, String publicId, String preparedPublicId, String preparedSha256) {
+        signingWorkflowService.requestSign(id, publicId, preparedPublicId, preparedSha256, getCurrentUser());
+        return getDetail(id);
+    }
+
+    public GuaranteeFileResponse prepareSigning(String id, String publicId) {
+        return signingWorkflowService.prepare(id, publicId, getCurrentUser());
     }
 
     @Transactional

@@ -45,3 +45,10 @@ cloudinary:
 
 secretkey: ${SECRET_KEY}
 
+signing:
+  keystore:
+    location: ${SIGNING_KEYSTORE_LOCATION:classpath:keystore.p12}
+    password: ${SIGNING_KEYSTORE_PASSWORD}
+    alias: ${SIGNING_KEYSTORE_ALIAS:eguarantee}
+  converter-url: ${SIGNING_CONVERTER_URL:http://localhost:8090}
+

@@ -157,6 +157,33 @@ public class GuaranteeController {
                 .body(ApiResponse.success("Phê duyệt yêu cầu bảo lãnh thành công", response));
     }
 
+    @PostMapping("/{id}/sign")
+    @Operation(
+            summary = "Ký số yêu cầu bảo lãnh",
+            description = "CHECKER ký PDF/DOCX/XLSX/XML; DOC/XLS phải gọi prepare, xem file rồi gửi preparedPublicId và preparedSha256. Chỉ ghi SIGNED sau khi xác thực chữ ký và lưu bản ký riêng. Hàng đợi đầy trả 503."
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> sign(
+            @PathVariable String id,
+            @RequestParam String publicId,
+            @RequestParam(required = false) String preparedPublicId,
+            @RequestParam(required = false) String preparedSha256
+    ) {
+        GuaranteeResponse response = guaranteeService.signGuarantee(id, publicId, preparedPublicId, preparedSha256);
+
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(ApiResponse.success("Chuyển trạng thái chờ ký số thành công", response));
+    }
+
+    @PostMapping("/{id}/sign/prepare")
+    @Operation(summary = "Chuẩn bị DOC/XLS để xem lại trước khi ký",
+            description = "CHECKER chuyển DOC thành DOCX, XLS thành XLSX. Xem file trả về và xác nhận publicId/hash khi ký; bản chuẩn bị hết hạn sau 24 giờ.")
+    public ResponseEntity<ApiResponse<com.example.ecommerce.dto.response.GuaranteeFileResponse>> prepareSigning(
+            @PathVariable String id, @RequestParam String publicId) {
+        return ResponseEntity.ok(ApiResponse.success("Bản chuẩn bị cần được xem lại trước khi xác nhận ký",
+                guaranteeService.prepareSigning(id, publicId)));
+    }
+
     @PostMapping("/{id}/reject")
     @Operation(
             summary = "Từ chối yêu cầu bảo lãnh",

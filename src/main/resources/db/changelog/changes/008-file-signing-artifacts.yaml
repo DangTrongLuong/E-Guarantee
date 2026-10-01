@@ -1,0 +1,31 @@
+databaseChangeLog:
+  - changeSet:
+      id: 08-file-signing-artifacts
+      author: codex
+      changes:
+        - addColumn:
+            tableName: guarantee_files
+            columns:
+              - column: { name: source_file_id, type: BIGINT }
+              - column:
+                  name: artifact_type
+                  type: VARCHAR(20)
+                  defaultValue: ORIGINAL
+                  constraints: { nullable: false }
+              - column: { name: sha256, type: VARCHAR(64) }
+              - column: { name: prepared_by, type: VARCHAR(255) }
+              - column: { name: prepared_at, type: DATETIME }
+        - addForeignKeyConstraint:
+            baseTableName: guarantee_files
+            baseColumnNames: source_file_id
+            referencedTableName: guarantee_files
+            referencedColumnNames: id
+            constraintName: fk_gf_source_file
+            onDelete: RESTRICT
+      rollback:
+        - dropForeignKeyConstraint: { baseTableName: guarantee_files, constraintName: fk_gf_source_file }
+        - dropColumn: { tableName: guarantee_files, columnName: prepared_at }
+        - dropColumn: { tableName: guarantee_files, columnName: prepared_by }
+        - dropColumn: { tableName: guarantee_files, columnName: sha256 }
+        - dropColumn: { tableName: guarantee_files, columnName: artifact_type }
+        - dropColumn: { tableName: guarantee_files, columnName: source_file_id }

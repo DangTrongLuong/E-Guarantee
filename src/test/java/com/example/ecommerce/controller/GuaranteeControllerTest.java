@@ -665,6 +665,45 @@ public class GuaranteeControllerTest {
                 .andExpect(jsonPath("$.data.files", hasSize(1)))
                 .andExpect(jsonPath("$.data.files[0].publicId", is("pub_001")));
 
+        updateReq1.setPublicIds(null);
+        mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.files", hasSize(1)));
+
+        updateReq1.setPublicIds(java.util.List.of("pub_001", "pub_002"));
+        mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq1)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.files", hasSize(2)));
+
+        // Reject derived artifacts and preserve the existing attachments on failure.
+        file2 = guaranteeFileRepository.findByPublicId("pub_002").orElseThrow();
+        file2.setArtifactType(com.example.ecommerce.enums.FileArtifactType.PREPARED);
+        guaranteeFileRepository.save(file2);
+        mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq1)))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(2,
+                guaranteeFileRepository.findByGuaranteeId(guaranteeId).size());
+        file2.setArtifactType(com.example.ecommerce.enums.FileArtifactType.ORIGINAL);
+        guaranteeFileRepository.save(file2);
+
+        // An original already attached here cannot be moved to another guarantee.
+        mockMvc.perform(post("/api/v1/guarantees")
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(createReq)))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(guaranteeId,
+                guaranteeFileRepository.findByPublicId("pub_002").orElseThrow().getGuaranteeId());
+
         // Update guarantee by sending empty publicIds list (removing all files)
         GuaranteeUpdateRequest updateReq2 = GuaranteeUpdateRequest.builder()
                 .customerCif("0012345678")
@@ -681,6 +720,20 @@ public class GuaranteeControllerTest {
                 .phoneNumber("0912345678")
                 .publicIds(java.util.Collections.emptyList())
                 .build();
+
+        com.example.ecommerce.entity.GuaranteeFile prepared = guaranteeFileRepository.save(
+                com.example.ecommerce.entity.GuaranteeFile.builder()
+                        .fileName("prepared.docx").fileUrl("http://cloudinary.com/prepared.docx")
+                        .publicId("prepared_001").guaranteeId(guaranteeId).sourceFileId(file1.getId())
+                        .artifactType(com.example.ecommerce.enums.FileArtifactType.PREPARED).build());
+        mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
+                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq2)))
+                .andExpect(status().isBadRequest());
+        org.junit.jupiter.api.Assertions.assertEquals(3,
+                guaranteeFileRepository.findByGuaranteeId(guaranteeId).size());
+        guaranteeFileRepository.delete(prepared);
 
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
                         .with(user(TEST_USERNAME).roles("MARKER"))

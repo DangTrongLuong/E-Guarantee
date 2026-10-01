@@ -5,5 +5,6 @@ public enum Action {
     UPDATE,
     SUBMIT,
     APPROVE,
-    REJECT
+    REJECT,
+    SIGN
 }

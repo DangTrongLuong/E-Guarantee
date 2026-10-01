@@ -39,6 +39,7 @@ public class GuaranteeResponse {
     private String contactEmail;
     private String phoneNumber;
     private GuaranteeStatus status;
+    private com.example.ecommerce.enums.SignatureStatus signatureStatus;
     private String createdBy;
     private String createdByFullName;
     private LocalDateTime createdDate;
