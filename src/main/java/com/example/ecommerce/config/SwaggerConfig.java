@@ -22,10 +22,10 @@ public class SwaggerConfig {
                                                 .title("E-Commerce Order Management System")
                                                 .description("Ứng dụng cho phép quản lý Customer, Product, Order và Order Item. Người dùng có thể tạo đơn hàng, thêm sản phẩm vào đơn, cập nhật trạng thái đơn hàng và xem lịch sử đơn hàng")
                                                 .version("1.0.0"))
-                                // .servers(List.of(
-                                // new Server()
-                                // .url("https://e-guarantee.datn-nextgen-suggest.site")
-                                // .description("Production"))) // Production
+//                                 .servers(List.of(
+//                                 new Server()
+//                                 .url("https://e-guarantee.datn-nextgen-suggest.site")
+//                                 .description("Production"))) // Production
                                 .addSecurityItem(new SecurityRequirement().addList(securitySchemaName))
                                 .components(new Components()
                                                 .addSecuritySchemes(securitySchemaName, new SecurityScheme()

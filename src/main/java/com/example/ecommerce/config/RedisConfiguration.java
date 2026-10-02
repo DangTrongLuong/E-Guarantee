@@ -1,5 +1,7 @@
+
 package com.example.ecommerce.config;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -8,16 +10,44 @@ import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
 
 @Configuration
+@RequiredArgsConstructor
 public class RedisConfiguration {
-    @Value("${spring.data.redis.host}")
-    private String host;
 
-    @Value("${spring.data.redis.port}")
-    private int port;
+    private final RedisProperties redisProperties;
 
-    @Value("${spring.data.redis.password:}")
-    private String password;
+    @Bean
+    public LettuceConnectionFactory redisConnectionFactory() {
+        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(
+                redisProperties.getHost(),
+                redisProperties.getPort()
+        );
 
+        config.setUsername(redisProperties.getUsername());
+
+        if (redisProperties.getPassword() != null && !redisProperties.getPassword().isBlank()) {
+            config.setPassword(RedisPassword.of(redisProperties.getPassword()));
+        }
+
+        LettuceConnectionFactory factory = new LettuceConnectionFactory(config);
+
+        if (redisProperties.getSsl() != null && redisProperties.getSsl().isEnabled()) {
+            factory.setUseSsl(true);
+        }
+
+        return factory;
+    }
+}
+//@Configuration
+//public class RedisConfiguration {
+//    @Value("${spring.data.redis.host}")
+//    private String host;
+//
+//    @Value("${spring.data.redis.port}")
+//    private int port;
+//
+//    @Value("${spring.data.redis.password:}")
+//    private String password;
+//
 //    @Bean
 //    public LettuceConnectionFactory redisConnectionFactory() {
 //        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host,
@@ -28,12 +58,15 @@ public class RedisConfiguration {
 //        return new LettuceConnectionFactory(config);
 //    }
 
-     @Bean
-     public LettuceConnectionFactory redisConnectionFactory() {
+//     @Bean
+//     public LettuceConnectionFactory redisConnectionFactory() {
+//
+//     return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host,
+//     port));
+//     }
 
-     return new LettuceConnectionFactory(new RedisStandaloneConfiguration(host,
-     port));
-     }
+
+//}
 
 
-}
+
