@@ -47,7 +47,7 @@ cloudinary:
   api-secret: ${CLOUD_API_SECRET}
 
 
-secretkey: ${SECRET_KEY}
+secretkey: ${SECRET_KEY_SIGNER}
 
 signing:
   keystore:
