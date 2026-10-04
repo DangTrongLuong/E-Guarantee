@@ -87,8 +87,8 @@ public class GuaranteeControllerTest {
             User u = User.builder()
                     .username(TEST_USERNAME)
                     .password("test")
-                    .fullName("Test Marker")
-                    .role(Role.MARKER)
+                    .fullName("Test Maker")
+                    .role(Role.MAKER)
                     .status(Status.ACTIVE)
                     .build();
             u.setCreatedAt(LocalDateTime.now());
@@ -117,7 +117,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -147,7 +147,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -176,7 +176,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -204,7 +204,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -230,7 +230,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -257,7 +257,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -285,7 +285,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -327,7 +327,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/guarantees/" + existing.getId())
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -369,7 +369,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/guarantees/" + existing.getId())
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -413,7 +413,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/guarantees/" + existing.getId())
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateRequest)))
                 .andExpect(status().isOk())
@@ -441,7 +441,7 @@ public class GuaranteeControllerTest {
                 .build());
 
         mockMvc.perform(delete("/api/v1/guarantees/" + existing.getId())
-                        .with(user(TEST_USERNAME).roles("MARKER")))
+                        .with(user(TEST_USERNAME).roles("MAKER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.message", containsString("Xóa yêu cầu bảo lãnh thành công")));
@@ -467,7 +467,7 @@ public class GuaranteeControllerTest {
                 .build());
 
         mockMvc.perform(delete("/api/v1/guarantees/" + existing.getId())
-                        .with(user(TEST_USERNAME).roles("MARKER")))
+                        .with(user(TEST_USERNAME).roles("MAKER")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.success", is(false)))
                 .andExpect(jsonPath("$.message", containsString("Chỉ được xóa hồ sơ ở trạng thái Bản nháp")));
@@ -535,7 +535,7 @@ public class GuaranteeControllerTest {
                 .build());
 
         mockMvc.perform(get("/api/v1/guarantees/status-counts")
-                        .with(user(TEST_USERNAME).roles("MARKER")))
+                        .with(user(TEST_USERNAME).roles("MAKER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.success", is(true)))
                 .andExpect(jsonPath("$.data.ALL", is(4)))
@@ -631,7 +631,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         String responseJson = mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createReq)))
                 .andExpect(status().isCreated())
@@ -658,7 +658,7 @@ public class GuaranteeControllerTest {
                 .build();
 
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq1)))
                 .andExpect(status().isOk())
@@ -667,7 +667,7 @@ public class GuaranteeControllerTest {
 
         updateReq1.setPublicIds(null);
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq1)))
                 .andExpect(status().isOk())
@@ -675,7 +675,7 @@ public class GuaranteeControllerTest {
 
         updateReq1.setPublicIds(java.util.List.of("pub_001", "pub_002"));
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq1)))
                 .andExpect(status().isOk())
@@ -686,7 +686,7 @@ public class GuaranteeControllerTest {
         file2.setArtifactType(com.example.ecommerce.enums.FileArtifactType.PREPARED);
         guaranteeFileRepository.save(file2);
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq1)))
                 .andExpect(status().isBadRequest());
@@ -697,7 +697,7 @@ public class GuaranteeControllerTest {
 
         // An original already attached here cannot be moved to another guarantee.
         mockMvc.perform(post("/api/v1/guarantees")
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createReq)))
                 .andExpect(status().isBadRequest());
@@ -727,7 +727,7 @@ public class GuaranteeControllerTest {
                         .publicId("prepared_001").guaranteeId(guaranteeId).sourceFileId(file1.getId())
                         .artifactType(com.example.ecommerce.enums.FileArtifactType.PREPARED).build());
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq2)))
                 .andExpect(status().isBadRequest());
@@ -736,7 +736,7 @@ public class GuaranteeControllerTest {
         guaranteeFileRepository.delete(prepared);
 
         mockMvc.perform(put("/api/v1/guarantees/" + guaranteeId)
-                        .with(user(TEST_USERNAME).roles("MARKER"))
+                        .with(user(TEST_USERNAME).roles("MAKER"))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updateReq2)))
                 .andExpect(status().isOk())

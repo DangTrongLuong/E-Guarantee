@@ -213,8 +213,8 @@ public class GuaranteeService {
     public GuaranteeResponse submit(String id) {
         User currentUser = getCurrentUser();
 
-        if (currentUser.getRole() != Role.MARKER) {
-            throw new BadRequestException("Chỉ MARKER mới được gửi hồ sơ phê duyệt");
+        if (currentUser.getRole() != Role.MAKER) {
+            throw new BadRequestException("Chỉ MAKER mới được gửi hồ sơ phê duyệt");
         }
 
         GuaranteeRequest guaranteeRequest = guaranteeRequestRepository.findById(id)

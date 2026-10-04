@@ -136,7 +136,7 @@ public class GuaranteeController {
     @PostMapping("/{id}/submit")
     @Operation(
             summary = "Gửi yêu cầu bảo lãnh phê duyệt",
-            description = "MARKER gửi hồ sơ ở trạng thái DRAFT sang PENDING_APPROVAL"
+            description = "MAKER gửi hồ sơ ở trạng thái DRAFT sang PENDING_APPROVAL"
     )
     public ResponseEntity<ApiResponse<GuaranteeResponse>> submit(
             @PathVariable String id
