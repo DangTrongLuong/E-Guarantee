@@ -60,7 +60,7 @@ class SigningWorkflowTest {
     GuaranteeFile add(String id, Long fileId) {
         requests.put(id, GuaranteeRequest.builder().id(id).status(GuaranteeStatus.APPROVED).signatureStatus(SignatureStatus.UNSIGNED).build());
         var file = GuaranteeFile.builder().id(fileId).guaranteeId(id).publicId("source-" + id).fileName("file.pdf")
-                .fileUrl("source-url").format("pdf").build();
+                .fileUrl("source-url").format("pdf").requiresSigning(true).build();
         documents.put(file.getPublicId(), file);
         return file;
     }
