@@ -80,7 +80,7 @@ class SigningWorkflowTest {
         assertThrows(BadRequestException.class, () -> workflow.requestSign("G1", source.getPublicId(), null, null, checker));
         source.setGuaranteeId("G1");
         assertThrows(BadRequestException.class, () -> workflow.requestSign("G1", source.getPublicId(), null, null,
-                User.builder().username("maker").role(Role.MARKER).build()));
+                User.builder().username("maker").role(Role.MAKER).build()));
         prepared();
         assertThrows(BadRequestException.class, () -> workflow.requestSign("G1", source.getPublicId(), null, null, checker));
         assertEquals(SignatureStatus.UNSIGNED, requests.get("G1").getSignatureStatus());

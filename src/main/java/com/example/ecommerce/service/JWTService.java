@@ -85,7 +85,6 @@ public class JWTService {
                 .subject(user.getUsername())
                 .issueTime(issueTime)
                 .expirationTime(expirationTime)
-                .expirationTime(expirationTime)
                 .claim(CLAIM_TYPE, TYPE_REFRESH)
                 .build();
         Payload payload = new Payload(claimsSet.toJSONObject());

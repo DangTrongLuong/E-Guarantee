@@ -34,7 +34,7 @@ public class AuthenticationController {
     private final UserService userService;
 
     @PostMapping("/register")
-    @Operation(summary = "Đăng ký tài khoản", description = "Tạo mới người dùng với role mặc định MARKER")
+    @Operation(summary = "Đăng ký tài khoản", description = "Tạo mới người dùng với role mặc định MAKER")
     public ResponseEntity<ApiResponse<UserResponse>> register(@Valid @RequestBody UserRequest request){
         UserResponse response = userService.create(request);
         log.info("Register success for username={}", request.getUsername());
