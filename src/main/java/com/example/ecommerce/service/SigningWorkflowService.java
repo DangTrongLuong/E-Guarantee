@@ -15,6 +15,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.*;
 import java.nio.file.*;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.*;
 
@@ -172,14 +173,27 @@ public class SigningWorkflowService {
                     throw new ConflictException("Hồ sơ không còn chờ ký");
                 GuaranteeFile source = files.findById(inputId).orElseThrow();
                 if (!id.equals(source.getGuaranteeId())) throw new ConflictException("File đã đổi hồ sơ");
+                GuaranteeFile originalFile = source.getArtifactType() == FileArtifactType.PREPARED ? 
+                        files.findById(source.getSourceFileId()).orElseThrow() : source;
+                originalFile.setIsDigitallySigned(true);
+                files.save(originalFile);
+
                 GuaranteeFile artifact = files.findByPublicId(artifactId).orElseThrow();
                 artifact.setGuaranteeId(id); artifact.setSourceFileId(inputId);
                 artifact.setArtifactType(FileArtifactType.SIGNED); artifact.setFormat(format);
                 files.save(artifact);
+
                 User user = users.findByUsername(username).orElseThrow();
-                req.setSignatureStatus(SignatureStatus.SIGNED); req.setUpdatedBy(user);
+                
+                List<GuaranteeFile> allFiles = files.findByGuaranteeId(id);
+                boolean allSigned = allFiles.stream()
+                        .filter(f -> f.getArtifactType() == FileArtifactType.ORIGINAL && Boolean.TRUE.equals(f.getRequiresSigning()))
+                        .allMatch(f -> Boolean.TRUE.equals(f.getIsDigitallySigned()));
+
+                req.setSignatureStatus(allSigned ? SignatureStatus.SIGNED : SignatureStatus.UNSIGNED); 
+                req.setUpdatedBy(user);
                 req.setUpdatedDate(LocalDateTime.now()); guarantees.save(req);
-                history(req, user, "Ký và xác thực " + format + " thành công; artifact=" + artifactId);
+                history(req, user, "Ký và xác thực " + format + " thành công; artifact=" + artifactId + (allSigned ? " (Hoàn tất ký hồ sơ)" : ""));
             });
         } catch (Exception e) {
             discard(uploadedId);
