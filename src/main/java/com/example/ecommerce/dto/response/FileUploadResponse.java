@@ -23,6 +23,7 @@ public class FileUploadResponse {
     private com.example.ecommerce.enums.FileArtifactType artifactType;
     private String sha256;
     private Boolean isDigitallySigned;
+    private Boolean requiresSigning;
     private LocalDateTime uploadedAt;
     private String status;
     private String errorMessage;

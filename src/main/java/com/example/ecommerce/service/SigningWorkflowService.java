@@ -142,6 +142,21 @@ public class SigningWorkflowService {
         }
     }
 
+    public void cancelSign(String id, User user) {
+        requireChecker(user);
+        tx.executeWithoutResult(status -> {
+            GuaranteeRequest req = guarantees.findForSigning(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy hồ sơ"));
+            if (req.getSignatureStatus() != SignatureStatus.PENDING_SIGN)
+                throw new BadRequestException("Chỉ có thể hủy khi hồ sơ đang chờ ký");
+            req.setSignatureStatus(SignatureStatus.UNSIGNED);
+            req.setUpdatedBy(user);
+            req.setUpdatedDate(LocalDateTime.now());
+            guarantees.save(req);
+            history(req, user, "Người dùng hủy yêu cầu ký số");
+        });
+    }
+
     private void execute(String id, Long inputId, String name, String format, String username, Path input) {
         String uploadedId = null;
         try {
@@ -188,6 +203,8 @@ public class SigningWorkflowService {
         if (!id.equals(file.getGuaranteeId())) throw new BadRequestException("File phải thuộc đúng hồ sơ");
         if (file.getArtifactType() != FileArtifactType.ORIGINAL || Boolean.TRUE.equals(file.getIsDigitallySigned()))
             throw new BadRequestException("Cần bản gốc chưa ký");
+        if (!Boolean.TRUE.equals(file.getRequiresSigning()))
+            throw new BadRequestException("File này là tài liệu đính kèm, không được phép ký số");
         return file;
     }
     private GuaranteeFile prepared(String id, GuaranteeFile source, String publicId, String hash, User user) {
@@ -205,8 +222,8 @@ public class SigningWorkflowService {
     }
     private void checkEligible(GuaranteeRequest req) {
         if (req.getStatus() != GuaranteeStatus.APPROVED) throw new BadRequestException("Chỉ hồ sơ APPROVED được ký");
-        if (req.getSignatureStatus() == SignatureStatus.SIGNED || req.getSignatureStatus() == SignatureStatus.PENDING_SIGN)
-            throw new ConflictException("Hồ sơ đã ký hoặc đang chờ ký");
+        if (req.getSignatureStatus() == SignatureStatus.PENDING_SIGN)
+            throw new ConflictException("Hồ sơ đang chờ ký file khác, vui lòng đợi");
     }
     private void history(GuaranteeRequest req, User user, String comment) {
         histories.save(ProcessingHistory.builder().guaranteeRequest(req).action(Action.SIGN).performedBy(user)
@@ -259,7 +276,7 @@ public class SigningWorkflowService {
     public static GuaranteeFileResponse response(GuaranteeFile file) {
         return GuaranteeFileResponse.builder().id(file.getId()).guaranteeId(file.getGuaranteeId()).fileName(file.getFileName())
                 .fileUrl(file.getFileUrl()).publicId(file.getPublicId()).fileSize(file.getFileSize()).format(file.getFormat())
-                .resourceType(file.getResourceType()).isDigitallySigned(file.getIsDigitallySigned()).createdAt(file.getCreatedAt())
+                .resourceType(file.getResourceType()).requiresSigning(file.getRequiresSigning()).isDigitallySigned(file.getIsDigitallySigned()).createdAt(file.getCreatedAt())
                 .sourceFileId(file.getSourceFileId()).artifactType(file.getArtifactType()).sha256(file.getSha256())
                 .preparedBy(file.getPreparedBy()).preparedAt(file.getPreparedAt()).build();
     }

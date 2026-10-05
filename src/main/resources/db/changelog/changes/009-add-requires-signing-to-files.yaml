@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-requires-signing-to-files
+      author: antigravity
+      changes:
+        - addColumn:
+            tableName: guarantee_files
+            columns:
+              - column:
+                  name: requires_signing
+                  type: boolean
+                  defaultValueBoolean: false
+                  constraints:
+                    nullable: false

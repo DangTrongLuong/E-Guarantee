@@ -32,9 +32,24 @@ public class FileUploadController {
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<FileUploadBatchResponse>> uploadFiles(
             @RequestParam("files") List<MultipartFile> files,
-            @RequestParam(value = "isDigitallySigned", required = false, defaultValue = "false") Boolean isDigitallySigned) {
+            @RequestParam(value = "requiresSigning", required = false) Boolean requiresSigning,
+            @RequestParam(value = "isDigitallySigned", required = false) Boolean isDigitallySigned) {
 
-        FileUploadBatchResponse response = fileUploadService.uploadFiles(files, isDigitallySigned);
+        // Fallback tương thích với Frontend cũ: 
+        // Frontend đang truyền nhầm isDigitallySigned để đại diện cho requiresSigning
+        if (Boolean.TRUE.equals(isDigitallySigned) && requiresSigning == null) {
+            requiresSigning = true;
+        } else if (Boolean.FALSE.equals(isDigitallySigned) && requiresSigning == null) {
+            requiresSigning = false;
+        }
+        
+        // Ép isDigitallySigned về false để không bị Backend reject 
+        // (vì lúc upload file luôn là file chưa có chữ ký vật lý)
+        isDigitallySigned = false;
+
+        FileUploadBatchResponse response = fileUploadService.uploadFiles(files, 
+                requiresSigning != null ? requiresSigning : false, 
+                isDigitallySigned);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ApiResponse.success("Upload danh sách file thành công", response));
     }

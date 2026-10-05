@@ -23,4 +23,7 @@ databaseChangeLog:
   - include:
       file: changes/008-file-signing-artifacts.yaml
       relativeToChangelogFile: true
+  - include:
+      file: changes/009-add-requires-signing-to-files.yaml
+      relativeToChangelogFile: true
 

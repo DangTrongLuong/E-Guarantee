@@ -72,6 +72,10 @@ public class GuaranteeFile implements Serializable {
     @Builder.Default
     private Boolean isDigitallySigned = false;
 
+    @Column(name = "requires_signing", nullable = false)
+    @Builder.Default
+    private Boolean requiresSigning = false;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 

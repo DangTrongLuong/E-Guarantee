@@ -280,6 +280,11 @@ public class GuaranteeService {
         return signingWorkflowService.prepare(id, publicId, getCurrentUser());
     }
 
+    public GuaranteeResponse cancelSign(String id) {
+        signingWorkflowService.cancelSign(id, getCurrentUser());
+        return getDetail(id);
+    }
+
     @Transactional
     public GuaranteeResponse reject(String id, RejectGuaranteeRequest request) {
         User currentUser = getCurrentUser();
