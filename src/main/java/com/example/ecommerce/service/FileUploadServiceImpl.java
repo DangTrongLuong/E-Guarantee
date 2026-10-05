@@ -48,15 +48,16 @@ public class FileUploadServiceImpl implements FileUploadService {
             "pdf", "doc", "docx", "xls", "xlsx", "xml");
 
     @Override
-    public FileUploadBatchResponse uploadFiles(List<MultipartFile> files, Boolean isDigitallySigned) {
+    public FileUploadBatchResponse uploadFiles(List<MultipartFile> files, Boolean requiresSigning, Boolean isDigitallySigned) {
         rejectSignedFlag(isDigitallySigned);
         validateBatchFiles(files);
         boolean signed = Boolean.TRUE.equals(isDigitallySigned);
+        boolean required = Boolean.TRUE.equals(requiresSigning);
 
         long totalSizeBytes = files.stream().mapToLong(MultipartFile::getSize).sum();
 
         List<CompletableFuture<FileUploadResponse>> futures = files.stream()
-                .map(file -> uploadSingleFileAsync(file, signed))
+                .map(file -> uploadSingleFileAsync(file, requiresSigning, isDigitallySigned))
                 .toList();
 
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(
@@ -84,17 +85,17 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @Override
-    public FileUploadResponse uploadSingleFile(MultipartFile file, Boolean isDigitallySigned) {
+    public FileUploadResponse uploadSingleFile(MultipartFile file, Boolean requiresSigning, Boolean isDigitallySigned) {
         rejectSignedFlag(isDigitallySigned);
         validateSingleFile(file);
-        return uploadToCloudinary(file, Boolean.TRUE.equals(isDigitallySigned));
+        return uploadToCloudinary(file, Boolean.TRUE.equals(requiresSigning), Boolean.TRUE.equals(isDigitallySigned));
     }
 
     @Override
-    public CompletableFuture<FileUploadResponse> uploadSingleFileAsync(MultipartFile file, Boolean isDigitallySigned) {
+    public CompletableFuture<FileUploadResponse> uploadSingleFileAsync(MultipartFile file, Boolean requiresSigning, Boolean isDigitallySigned) {
         rejectSignedFlag(isDigitallySigned);
         validateSingleFile(file);
-        return CompletableFuture.supplyAsync(() -> uploadToCloudinary(file, Boolean.TRUE.equals(isDigitallySigned)),
+        return CompletableFuture.supplyAsync(() -> uploadToCloudinary(file, Boolean.TRUE.equals(requiresSigning), Boolean.TRUE.equals(isDigitallySigned)),
                 fileUploadExecutor);
     }
 
@@ -178,7 +179,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     // Package-private: controllers cannot mark uploaded files as signed.
     FileUploadResponse storeArtifact(MultipartFile file, boolean signed) {
         validateSingleFile(file, signed);
-        return uploadToCloudinary(file, signed);
+        return uploadToCloudinary(file, true, signed);
     }
 
     void discardArtifact(String publicId) {
@@ -209,7 +210,7 @@ public class FileUploadServiceImpl implements FileUploadService {
     }
 
     @SuppressWarnings("unchecked")
-    private FileUploadResponse uploadToCloudinary(MultipartFile file, boolean isDigitallySigned) {
+    private FileUploadResponse uploadToCloudinary(MultipartFile file, boolean requiresSigning, boolean isDigitallySigned) {
         String originalFilename = file.getOriginalFilename();
         String extension = getFileExtension(originalFilename).toLowerCase();
 
@@ -261,6 +262,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                     .fileSize(fileSize)
                     .format(format)
                     .resourceType(resourceType)
+                    .requiresSigning(requiresSigning)
                     .isDigitallySigned(isDigitallySigned)
                     .sha256(sha256)
                     .build();
@@ -275,6 +277,7 @@ public class FileUploadServiceImpl implements FileUploadService {
                     .format(format)
                     .fileSize(fileSize)
                     .resourceType(resourceType)
+                    .requiresSigning(savedFile.getRequiresSigning())
                     .isDigitallySigned(savedFile.getIsDigitallySigned())
                     .artifactType(savedFile.getArtifactType())
                     .sourceFileId(savedFile.getSourceFileId())

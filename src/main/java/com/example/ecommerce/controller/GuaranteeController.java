@@ -189,6 +189,15 @@ public class GuaranteeController {
                 guaranteeService.prepareSigning(id, publicId)));
     }
 
+    @PostMapping("/{id}/sign/cancel")
+    @Operation(
+            summary = "Hủy ký số yêu cầu bảo lãnh",
+            description = "CHECKER hủy ký số yêu cầu bảo lãnh"
+    )
+    public ResponseEntity<ApiResponse<GuaranteeResponse>> cancelSign(@PathVariable String id){
+        return ResponseEntity.ok(ApiResponse.success("Hủy ký số thành công", guaranteeService.cancelSign(id)));
+    }
+
     @PostMapping("/{id}/reject")
     @Operation(
             summary = "Từ chối yêu cầu bảo lãnh",

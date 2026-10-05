@@ -26,5 +26,6 @@ public class GuaranteeFileResponse {
     private String preparedBy;
     private LocalDateTime preparedAt;
     private Boolean isDigitallySigned;
+    private Boolean requiresSigning;
     private LocalDateTime createdAt;
 }
